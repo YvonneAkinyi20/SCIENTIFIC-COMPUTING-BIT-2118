@@ -1,104 +1,92 @@
-# BIT 2118 Scientific Computing
-
-## Task A: NumPy Arrays and Numerical Computation
-
-**Program file:** `code/Task_02_numpy_arrays.py`
-**Output graph:** `output/cold_storage_plot.png`
 
 ---
 
-## 1. Mathematical Concept
+## Task B: Mathematical Functions and Vectorization
 
-An **array** is an organized collection of numbers.
+**Program file:** `code/Task_03_vectorization.py`
+**Output graph:** `output/response_time_histogram.png`
 
-- A **vector** is a one-dimensional array: `v = [v1, v2, ..., vn]`
-- A **matrix** is a rectangular array: `A = [aij]`
+### 1. Mathematical Concept
 
-Scientific computing often applies **one operation to every element**. For example, if `x = [1, 2, 3]`, then `x² = [1, 4, 9]`. NumPy performs these operations directly on the whole array without a loop for each value (this is called vectorization).
+**Vectorization** means applying a mathematical operation to many values at the same time. If `yᵢ = sin²(xᵢ) + cos²(xᵢ)`, the identity gives `yᵢ = 1` for every `xᵢ`. Instead of looping through `x1, x2, ..., xn`, NumPy evaluates the whole vector in one expression. Vectorized code runs in compiled C code inside NumPy, which is why it is so much faster than a Python `for` loop.
 
-## 2. Example
+### 2. Example
 
-If the temperatures are `[20, 22, 24, 26]` °C, their mean is (20 + 22 + 24 + 26) / 4 = 23 °C. With NumPy, `np.mean(temperatures)` does this in one step.
+For `x = [0, π/2, π]`, `np.sin(x)` gives approximately `[0, 1, 0]`. The same operation works whether `x` has 3 values or one million values.
 
-## 3. Real-World Applications
+### 3. Real-World Applications
 
-1. Sensor readings from IoT devices
-2. Image pixels
-3. Network traffic measurements
-4. Scientific measurements
-5. Machine-learning feature matrices
-6. Financial time series
+Large datasets, simulations, signal processing, image processing, numerical models, and machine learning, where millions of arithmetic operations are repeated.
 
-## 4. Real-World Problem and Solution Approach
+### 4. Real-World Problem and Solution Approach
 
-**Problem:** A weather station records 24 hourly temperatures. Store them in an array, calculate the daily mean, minimum and maximum, and convert all values from Celsius to Fahrenheit.
+**Problem:** A network-monitoring system has one million latency measurements and needs to convert each from milliseconds to seconds and square the values for an error calculation.
 
-**Solution approach:** Represent the readings as one NumPy array. Use `mean()`, `min()` and `max()`, then apply `F = 1.8C + 32` to the entire array at once.
+**Solution approach:** Use vectorized NumPy expressions such as `seconds = latency_ms / 1000` and `squared = seconds ** 2`. This is simpler and usually much faster than Python loops.
 
-## 5. Solution Code
+### 5. Solution Code
 
-See `code/Task_02_numpy_arrays.py`.
+See `code/Task_03_vectorization.py`. It contains both a loop version and a vectorized version, times them with `timeit`, and checks that they give the same answer.
 
-### Output
+**Output:**
 
 ```
-Daily mean temperature: 23.12 C
-Minimum temperature: 17.50 C
-Maximum temperature: 29.40 C
-First six Fahrenheit readings: [65.3  64.4  64.04 63.5  64.22 66.2 ]
+First five squared latency values: [0.03787665 0.01266192 0.04637842 0.03092504 0.00078812]
+Loop time: 0.1921 s
+Vectorized time: 0.0067 s
+Approximate speed-up: 28.5x
+Loop and vectorized results match? True
 ```
 
-**Interpretation:** The coolest hour was 17.5 °C and the warmest was 29.4 °C, giving a daily mean of 23.12 °C.
+**Interpretation:** Both methods give identical results, but the vectorized version is about 28 times faster on one million values (the exact speed-up depends on the computer).
 
-## 6. Changing the Inputs and Observing the Results
+### 6. Changing the Inputs and Observing the Results
 
-| Change made | Mean (°C) | Min (°C) | Max (°C) |
-|-------------|-----------|----------|----------|
-| Original | 23.12 | 17.50 | 29.40 |
-| All readings + 10 °C | 33.12 | 27.50 | 39.40 |
-| Highest reading changed to 60 °C | 24.40 | 17.50 | 60.00 |
-| Constant 20 °C all day | 20.00 | 20.00 | 20.00 |
-| All readings − 25 °C | −1.88 | −7.50 | 4.40 |
+| Change made | Result |
+|-------------|--------|
+| 100 values | Speed-up about 6x (too little data for vectorization to matter much) |
+| 10,000 values | Speed-up about 85x |
+| 1,000,000 values | Speed-up about 45x |
+| Slow network (100 to 900 ms) | Mean squared latency rises from 0.0213 s² to 0.3032 s² |
+| One outlier of 10,000 ms | Maximum squared value jumps from 0.0625 s² to 100 s², but the mean barely changes (0.021259 to 0.021359 s²) |
+| Constant 100 ms | Every squared value is 0.01 s² |
 
 **Observations:**
 
-- Adding or subtracting a constant shifts the mean, minimum and maximum by exactly that amount.
-- One outlier (60 °C) raised the mean by about 1.3 °C and changed the maximum, while the minimum stayed the same. The mean is sensitive to extreme values.
-- A constant day gives the same mean, minimum and maximum.
+- Vectorization helps most on larger datasets. The speed-up varies between runs, but it is always large.
+- Squaring magnifies large values, so a single outlier dominates the maximum squared error.
+- Because squaring is a nonlinear operation, doubling the latency makes the squared value four times larger.
 
-## 7. Related Real-World Case: Cold-Storage Room Monitoring
+### 7. Related Real-World Case: Web-Server Response-Time Monitoring
 
-**Scenario:** A sensor records a cold-storage room's temperature every hour for 24 hours. Produce is safe only at or below 5.0 °C.
+**Scenario:** A web server logs the response time of one million requests. The target is 120 ms, and any response slower than 200 ms breaks the service agreement (SLA).
 
 **Assumptions:**
 
-1. One reading per hour for 24 hours.
-2. Readings are in °C.
-3. The safe limit is 5.0 °C.
-4. The door is opened for deliveries around hours 8 to 10, so the temperature rises then.
+1. The server logs one million response times in milliseconds.
+2. The target response time is 120 ms.
+3. Responses over 200 ms break the SLA.
+4. Most requests are fast and a few are slow (modelled with a lognormal distribution).
 
-**Approach:** Compare every reading with the limit using a boolean array (`room_c > SAFE_LIMIT_C`), count the `True` values with `np.sum()`, and plot the readings with the limit as a dashed line.
+**Approach:** Compute the error from the target, square it, and take the root mean squared error (RMSE), all as vectorized expressions. Use a boolean array (`response_ms > SLA_MS`) to count the slow requests.
 
 **Results:**
 
 ```
-Mean temperature: 3.69 C (38.64 F)
-Minimum temperature: 2.90 C
-Maximum temperature: 6.40 C at hour 9
-Safe limit: 5.0 C
-Hours above the safe limit: 3
-Hours where limit was exceeded: [ 8  9 10]
+Mean response time: 116.98 ms
+Median response time: 110.08 ms
+95th percentile: 195.59 ms
+Root mean squared error vs 120 ms target: 42.30 ms
+Requests slower than 200 ms: 43,665 (4.37%)
 ```
 
-**Interpretation:** The room went above the safe limit at hours 8, 9 and 10, matching the delivery period, so the produce may be at risk. The door and cooling system should be checked.
+**Interpretation:** Only 4.37% of requests exceed 200 ms, so the server is performing acceptably. With a stricter limit of 150 ms, 18.83% of requests would be too slow.
 
-**Changing an input:** With a stricter limit of 4.0 °C, the hours above the limit rise to 5.
+![Web-server response times](output/response_time_histogram.png)
 
-![Cold-storage room temperature over 24 hours](output/cold_storage_plot.png)
-
-## 8. How to Run
+### 8. How to Run
 
 ```bash
 pip install numpy matplotlib
-python code/Task_02_numpy_arrays.py
+python code/Task_03_vectorization.py
 ```
