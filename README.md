@@ -391,3 +391,54 @@ Residual norm: 0.0
 | Observed total | 22 | 80 | 21 |
 
 **System
+
+## Task F: Gaussian Elimination and LU Decomposition
+
+**Program file:** `code/Task_07_gaussian_lu.py`
+**Output graph:** `output/task_07_diagram.png`
+
+### 1. Mathematical Concept
+
+Gaussian elimination transforms `Ax = b` into an equivalent upper-triangular system by removing variables one row at a time, then solves it by back-substitution. LU decomposition writes `PA = LU`, where `L` is lower triangular, `U` is upper triangular and `P` records any row swaps (pivoting). Once `A` is factored, every new `b` is solved in two cheap steps: forward substitution `Ly = Pb`, then back substitution `Ux = y`.
+
+### 2. Example
+
+For `A = [[4,-1,0],[-1,4,-1],[0,-1,3]]` and `b = [15,10,10]`:
+
+- Row 2 ← Row 2 + 0.25 × Row 1 removes x from row 2 and gives `3.75y − z = 13.75`.
+- Row 3 ← Row 3 + 0.2667 × Row 2 removes y from row 3 and gives `2.7333z = 13.6667`.
+- The last equation gives `z = 5`. Back-substitution gives `y = 5` and `x = 5`.
+
+The multipliers (0.25 and 0.2667) are the entries of `L`, and the reduced matrix is `U`.
+
+### 3. Real-World Applications
+
+Engineering simulations, repeated linear-system solutions, finite-element methods, economic models and scientific models with many equations.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** A simulation uses the same coefficient matrix `A` every second but receives a new measurement vector `b`.
+
+**Solution approach:** Factor `A` once with `lu_factor`. Reuse the factors with `lu_solve` for each new `b`, instead of repeating the full elimination every time.
+
+### 5. Solution Code
+
+See `code/Task_07_gaussian_lu.py`. It factors `A` once, solves three measurement sets, checks the residuals, compares with `np.linalg.solve`, tests changed inputs, solves a heated-rod case, times repeated solves, and draws one summary diagram.
+
+**Output:**
+
+```
+L = [[ 1.      0.      0.    ]
+     [-0.25    1.      0.    ]
+     [ 0.     -0.2667  1.    ]]
+U = [[ 4.     -1.      0.    ]
+     [ 0.      3.75   -1.    ]
+     [ 0.      0.      2.7333]]
+Set 1: b = [15. 10. 10.] -> x = [5.     5.     5.    ]  (residual 0)
+Set 2: b = [16. 11.  9.] -> x = [5.3171 5.2683 4.7561] (residual 1.8e-15)
+Set 3: b = [14. 12. 11.] -> x = [4.9024 5.6098 5.5366] (residual 0)
+```
+
+![Task 07 summary](output/task_07_diagram.png)
+
+**Interpretation:** Each solution satisfies all
