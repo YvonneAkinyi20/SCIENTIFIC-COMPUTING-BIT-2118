@@ -5,47 +5,43 @@ BIT 2118 Scientific Computing
 Real-world problem: determine how many servers of each type are active,
 given total CPU and memory usage.
 
-    x = number of Type A servers
-    y = number of Type B servers
-
-    Type A uses 4 CPU units and  8 GB memory
-    Type B uses 2 CPU units and 12 GB memory
-    Total observed usage: 20 CPU units and 72 GB memory
+    x = number of Type A servers      (4 CPU units,  8 GB memory each)
+    y = number of Type B servers      (2 CPU units, 12 GB memory each)
+    Observed totals: 20 CPU units and 72 GB memory
 
     4x +  2y = 20   (CPU)
     8x + 12y = 72   (Memory)
 
-Written as Ax = b and solved with np.linalg.solve().
+Just run this one file. It will:
+  1. print the results in the terminal,
+  2. save them to output/task_06_output.txt,
+  3. draw ONE summary diagram (method flowchart, the lines for every variation,
+     and a server-count comparison),
+  4. save it to output/task_06_diagram.png and open it automatically.
 
-The program:
-  1. Solves the textbook example and the main server problem.
-  2. Tests variations of the input values, handling singular systems and
-     flagging answers that are not realistic (fractional or negative servers).
-  3. Displays everything on screen and saves it to output/task_06_output.txt
-  4. Plots every variation and saves it to output/linear_system_plot.png
+Run from the repo root:  python code/Task_06_linear_systems.py
 """
 
+import os
+import subprocess
+import sys
 from pathlib import Path
 
 import numpy as np
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
-try:
-    import matplotlib.pyplot as plt
-    HAVE_MPL = True
-except ImportError:          # the maths still runs without matplotlib
-    HAVE_MPL = False
-
-SHOW_PLOT = True             # set to False to only save the figure
-TOL = 1e-9                   # tolerance for "is this a whole / non-negative number"
+TOL = 1e-9   # tolerance for "is this a whole / non-negative number"
 
 # ---------------------------------------------------------------------------
-# Output handling: collect every line, print it, and save it at the end
+# Output handling: print every line and remember it for the output file
 # ---------------------------------------------------------------------------
 lines = []
 
 
 def show(text=""):
-    """Print a line on screen and remember it for the output file."""
     print(text)
     lines.append(str(text))
 
@@ -54,20 +50,14 @@ def show(text=""):
 # Solver with checks
 # ---------------------------------------------------------------------------
 def solve_system(A, b):
-    """
-    Solve Ax = b safely and decide whether the answer makes sense as a
-    number of servers.
-
-    Returns a dict with: A, b, x, residual_norm, tag, status
-    """
+    """Solve Ax = b safely and decide whether it makes sense as server counts."""
     A = np.asarray(A, dtype=float)
     b = np.asarray(b, dtype=float)
     result = {"A": A, "b": b, "x": None, "residual_norm": None}
 
-    # Singular matrix (det = 0): no unique solution, solve() would raise an error
     try:
         x = np.linalg.solve(A, b)
-    except np.linalg.LinAlgError:
+    except np.linalg.LinAlgError:          # singular matrix, det(A) = 0
         result["tag"] = "no unique solution"
         result["status"] = "NO UNIQUE SOLUTION (singular matrix, det(A) = 0)"
         return result
@@ -75,7 +65,6 @@ def solve_system(A, b):
     result["x"] = x
     result["residual_norm"] = np.linalg.norm(b - A @ x)
 
-    # Servers must be whole, non-negative numbers
     issues = []
     if np.any(x < -TOL):
         issues.append("negative")
@@ -93,14 +82,10 @@ def solve_system(A, b):
 
 
 # ---------------------------------------------------------------------------
-# 1. Small textbook example: 2x + 3y = 8 and 4x + y = 6
+# 1. Textbook example: 2x + 3y = 8 and 4x + y = 6
 # ---------------------------------------------------------------------------
-A_example = np.array([
-    [2.0, 3.0],
-    [4.0, 1.0]
-])
+A_example = np.array([[2.0, 3.0], [4.0, 1.0]])
 b_example = np.array([8.0, 6.0])
-
 x_example = np.linalg.solve(A_example, b_example)
 
 show("=" * 60)
@@ -113,20 +98,9 @@ show()
 # ---------------------------------------------------------------------------
 # 2. Real-world problem: server types
 # ---------------------------------------------------------------------------
-# Rows:    [CPU equation, Memory equation]
-# Columns: [Type A servers, Type B servers]
-A = np.array([
-    [4.0,  2.0],
-    [8.0, 12.0]
-])
-
-# Observed totals: 20 CPU units and 72 GB memory
+A = np.array([[4.0, 2.0], [8.0, 12.0]])   # rows: CPU, Memory; cols: Type A, Type B
 b = np.array([20.0, 72.0])
-
-# Solve Ax = b
 solution = np.linalg.solve(A, b)
-
-# Residual: how far A @ solution is from b (should be ~0)
 residual = b - A @ solution
 
 show("=" * 60)
@@ -144,14 +118,14 @@ show(f"Residual norm: {np.linalg.norm(residual)}")
 show()
 
 # ---------------------------------------------------------------------------
-# 3. Variations: how does the code behave for different input values?
+# 3. Variations of the input values
 # ---------------------------------------------------------------------------
 scenarios = [
-    ("1. Original",              [[4, 2], [8, 12]], [20, 72]),
+    ("1. Original",               [[4, 2], [8, 12]], [20, 72]),
     ("2. Different coefficients", [[3, 1], [2, 5]],  [14, 24]),
-    ("3. Fractional answer",     [[4, 2], [8, 12]], [21, 70]),
-    ("4. Negative answer",       [[4, 2], [8, 12]], [2, -8]),
-    ("5. Singular (parallel)",   [[4, 2], [8, 4]],  [20, 50]),
+    ("3. Fractional answer",      [[4, 2], [8, 12]], [21, 70]),
+    ("4. Negative answer",        [[4, 2], [8, 12]], [2, -8]),
+    ("5. Singular (parallel)",    [[4, 2], [8, 4]],  [20, 50]),
 ]
 
 show("=" * 60)
@@ -174,69 +148,110 @@ for name, A_s, b_s in scenarios:
     show()
 
 # ---------------------------------------------------------------------------
-# 4. Save the text output to the output folder (created if it does not exist)
+# 4. Save the text output (output folder is next to the code folder)
 # ---------------------------------------------------------------------------
-# The script lives in code/, so the output folder is one level up.
 output_dir = Path(__file__).resolve().parent.parent / "output"
 output_dir.mkdir(exist_ok=True)
-
 output_file = output_dir / "task_06_output.txt"
 output_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
 print(f"Output saved to: {output_file}")
 
 # ---------------------------------------------------------------------------
-# 5. Visualise the variations
+# 5. ONE summary diagram
 # ---------------------------------------------------------------------------
-# Each equation is a straight line. The solution is where the lines cross.
-if HAVE_MPL:
-    fig, axes = plt.subplots(2, 3, figsize=(14, 8))
-    axes = axes.ravel()
-    xs = np.linspace(-1, 10, 200)
-    styles = ["-", "--"]
-    row_names = ["CPU", "Memory"]
+STATUS_COLOUR = {"valid": "#2e8b57", "not whole": "#e6a817",
+                 "negative": "#c0392b", "negative, not whole": "#c0392b",
+                 "no unique solution": "#7f8c8d"}
 
-    for ax, res in zip(axes, results):
-        for i in range(2):
-            a1, a2 = res["A"][i]
-            c = res["b"][i]
-            label = f"{row_names[i]}: {a1:g}x + {a2:g}y = {c:g}"
-            if abs(a2) > 1e-12:
-                ax.plot(xs, (c - a1 * xs) / a2, styles[i], linewidth=2, label=label)
-            else:
-                ax.axvline(c / a1, linestyle=styles[i], linewidth=2, label=label)
+fig = plt.figure(figsize=(16, 11.5))
+gs = fig.add_gridspec(3, 3, height_ratios=[0.7, 1, 1], hspace=0.55, wspace=0.3)
+fig.suptitle("Task 06: Solving Systems of Linear Equations (Ax = b) - Summary Diagram",
+             fontsize=16, fontweight="bold")
 
-        if res["x"] is not None:
-            px, py = res["x"]
-            ax.plot(px, py, "ko", markersize=8)
-            ax.annotate(f"({px:.2f}, {py:.2f})", (px, py),
-                        textcoords="offset points", xytext=(8, 8), fontsize=9)
+# ---- Row 1: method flowchart ----
+ax = fig.add_subplot(gs[0, :])
+ax.set_xlim(0, 100); ax.set_ylim(0, 20); ax.axis("off")
+ax.set_title("Method: write the problem as Ax = b, solve, then check the answer", fontsize=12)
+boxes = [
+    (1,  "Inputs\nA = [[4, 2], [8, 12]]\nb = [20, 72]",        "#dbe9f6"),
+    (22, "Solve\nnp.linalg.solve(A, b)",                         "#fde2c4"),
+    (43, "Check\ndet(A) = 0 ?\nwhole & non-negative ?",          "#fff3c4"),
+    (64, "Verify\nresidual = b - A @ x\n(should be ~ 0)",         "#e3f2d9"),
+    (84, "Output\nType A = 3\nType B = 4",                       "#f6d9e8"),
+]
+for xpos, text, col in boxes:
+    ax.add_patch(FancyBboxPatch((xpos, 4.5), 15, 11, boxstyle="round,pad=0.4",
+                                fc=col, ec="black", lw=1.2))
+    ax.text(xpos + 7.5, 10, text, ha="center", va="center", fontsize=8.5)
+for x0 in (16.5, 37.5, 58.5, 79.5):
+    ax.add_patch(FancyArrowPatch((x0 + 0.5, 10), (x0 + 5, 10), arrowstyle="-|>",
+                                 mutation_scale=18, lw=1.5, color="black"))
+
+# ---- Rows 2-3: one panel per variation (lines cross at the solution) ----
+xs = np.linspace(-1, 10, 200)
+styles = ["-", "--"]
+row_names = ["CPU", "Memory"]
+slots = [(1, 0), (1, 1), (1, 2), (2, 0), (2, 1)]
+
+for (r, c), res in zip(slots, results):
+    ax = fig.add_subplot(gs[r, c])
+    for i in range(2):
+        a1, a2 = res["A"][i]
+        cst = res["b"][i]
+        label = f"{row_names[i]}: {a1:g}x + {a2:g}y = {cst:g}"
+        if abs(a2) > 1e-12:
+            ax.plot(xs, (cst - a1 * xs) / a2, styles[i], linewidth=2, label=label)
         else:
-            ax.text(0.5, 0.08, "lines never meet: no solution",
-                    transform=ax.transAxes, ha="center", fontsize=9)
+            ax.axvline(cst / a1, linestyle=styles[i], linewidth=2, label=label)
+    if res["x"] is not None:
+        px, py = res["x"]
+        ax.plot(px, py, "ko", markersize=8)
+        ax.annotate(f"({px:.2f}, {py:.2f})", (px, py),
+                    textcoords="offset points", xytext=(8, 8), fontsize=9)
+    else:
+        ax.text(0.5, 0.08, "lines never meet: no solution",
+                transform=ax.transAxes, ha="center", fontsize=9)
+    ax.axhline(0, color="grey", linewidth=0.8)
+    ax.axvline(0, color="grey", linewidth=0.8)
+    ax.set_xlim(-1, 10); ax.set_ylim(-5, 12)
+    ax.set_xlabel("Type A servers (x)"); ax.set_ylabel("Type B servers (y)")
+    ax.set_title(f"{res['name']}\n[{res['tag']}]", fontsize=10,
+                 color=STATUS_COLOUR.get(res["tag"], "black"))
+    ax.grid(True, alpha=0.3)
+    ax.legend(fontsize=7, loc="upper right")
 
-        ax.axhline(0, color="grey", linewidth=0.8)
-        ax.axvline(0, color="grey", linewidth=0.8)
-        ax.set_xlim(-1, 10)
-        ax.set_ylim(-5, 12)
-        ax.set_xlabel("Type A servers (x)")
-        ax.set_ylabel("Type B servers (y)")
-        ax.set_title(f"{res['name']}\n[{res['tag']}]", fontsize=10)
-        ax.grid(True, alpha=0.3)
-        ax.legend(fontsize=7, loc="upper right")
+# ---- Last panel: server counts per variation ----
+ax = fig.add_subplot(gs[2, 2])
+labels = [f"{i + 1}" for i in range(len(results))]
+a_vals = [res["x"][0] if res["x"] is not None else 0 for res in results]
+b_vals = [res["x"][1] if res["x"] is not None else 0 for res in results]
+w = 0.38
+bars_a = ax.bar(np.arange(len(results)) - w / 2, a_vals, w, label="Type A servers")
+bars_b = ax.bar(np.arange(len(results)) + w / 2, b_vals, w, label="Type B servers")
+ax.bar_label(bars_a, fmt="%.2f", fontsize=7)
+ax.bar_label(bars_b, fmt="%.2f", fontsize=7)
+for i, res in enumerate(results):
+    if res["x"] is None:
+        ax.text(i, 0.3, "none", ha="center", fontsize=8, color="#7f8c8d")
+ax.axhline(0, color="grey", linewidth=0.8)
+ax.set_xticks(range(len(results))); ax.set_xticklabels(labels)
+ax.set_xlabel("Variation number")
+ax.set_ylabel("Number of servers")
+ax.set_title("Server counts for each variation")
+ax.legend(fontsize=8); ax.grid(axis="y", alpha=0.3)
 
-    for ax in axes[len(results):]:       # hide unused panel(s)
-        ax.axis("off")
+plot_file = output_dir / "task_06_diagram.png"
+fig.savefig(plot_file, dpi=150, bbox_inches="tight")
+print(f"Diagram saved to: {plot_file}")
 
-    fig.suptitle("Solving Ax = b: where the CPU and Memory lines cross",
-                 fontsize=13)
-    fig.tight_layout()
-
-    plot_file = output_dir / "linear_system_plot.png"
-    fig.savefig(plot_file, dpi=150)
-    print(f"Plot saved to: {plot_file}")
-
-    if SHOW_PLOT:
-        plt.show()
-else:
-        print("matplotlib not installed - skipping the plot "
-          "(install it with: pip install matplotlib)")
+# ---- open the diagram automatically ----
+try:
+    if sys.platform.startswith("win"):
+        os.startfile(str(plot_file))
+    elif sys.platform == "darwin":
+        subprocess.run(["open", str(plot_file)], check=False)
+    else:
+        subprocess.run(["xdg-open", str(plot_file)], check=False,
+                       stderr=subprocess.DEVNULL)
+except Exception:
+    print("Could not open the image automatically - open it from the output/ folder.")

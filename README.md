@@ -218,3 +218,92 @@ math.fsum:            100000.0000000000  (error 0.00e+00)
 pip install numpy matplotlib
 python code/Task_04_numerical_errors.py
 ```
+
+## Task D: Matrix Algebra and Matrix Operations
+
+**Program file:** `code/Task_05_matrix_algebra.py`
+**Output graph:** `output/task_05_diagram.png`
+
+### 1. Mathematical Concept
+
+A matrix organizes values in rows and columns. Matrix addition combines corresponding elements. Matrix multiplication combines rows of the first matrix with columns of the second: `cᵢⱼ = Σ aᵢₖ bₖⱼ`. The determinant indicates whether a square matrix is invertible (`det = 0` means it is not). The inverse `A⁻¹` satisfies `A A⁻¹ = I`. For a 2-D transformation, `|det|` is also the factor by which areas are multiplied.
+
+### 2. Example
+
+For `A = [[1,2],[3,4]]` and `x = [5,6]`: `Ax = [1×5 + 2×6, 3×5 + 4×6] = [17, 39]`. Also `det(A) = 1×4 − 2×3 = −2`, so `A` is invertible.
+
+### 3. Real-World Applications
+
+Computer graphics transformations, machine learning, cryptography, network models, robotics, electrical circuits and solving systems of equations.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** A graphics program needs to rotate and scale a set of 2-D coordinates representing points on an object.
+
+**Solution approach:** Store the points as coordinate vectors, build a rotation matrix and a scaling matrix, combine them (`T = R @ S`), and multiply every point by `T` so all points are transformed consistently. With points stored as rows, use `points @ T.T`.
+
+### 5. Solution Code
+
+See `code/Task_05_matrix_algebra.py`. It checks the matrix concepts, transforms the four corners of a square (rotate 45°, scale by 2 and 1.5), tests changed inputs, solves an electrical-circuit case, and draws one summary diagram.
+
+**Output:**
+
+```
+Part 0: A @ x = [17. 39.]   det(A) = -2.0   A @ inverse(A) = identity
+Transformation matrix (rotation @ scale):
+[[ 1.4142 -1.0607]
+ [ 1.4142  1.0607]]
+Transformed points:
+[[ 0.      0.    ]
+ [ 1.4142  1.4142]
+ [ 0.3536  2.4749]
+ [-1.0607  1.0607]]
+Determinant: 3.0000
+```
+
+![Task 05 summary](output/task_05_diagram.png)
+
+**Interpretation:** Every point of the square is rotated by 45° and stretched by 2 in one direction and 1.5 in the other. The determinant is 3 (= 2 × 1.5 × 1), so the transformed shape has three times the area of the unit square. Rotation alone never changes area (its determinant is 1), so the area change comes from the scaling.
+
+### 6. Changing the Inputs and Observing the Results
+
+| Change made | Determinant | Result |
+|---|---|---|
+| Angle 45° → 90° | 3 | Same area. The square turns to a different orientation: corners `(0,0), (0,2), (−1.5,2), (−1.5,0)`. |
+| Scale (1, 1), pure rotation | 1 | Same size, only rotated. |
+| Scale (2, −1.5) | −3 | The area still grows by 3, but the shape is a mirror image (reflection). |
+| Order swapped (`S @ R`) | 3 | Same area but a different shape and position. Matrix multiplication is not commutative. |
+| Scale (2, 0) | 0 | The square collapses to a line and the matrix cannot be inverted. |
+
+**Observations:**
+
+- The sign of the determinant shows whether the shape is flipped, and `det = 0` shows the transformation destroys information.
+- Order matters: `R @ S ≠ S @ R`.
+- When `det ≠ 0`, the inverse matrix undoes the transformation exactly (maximum recovery error about 5×10⁻¹⁷).
+
+### 7. Related Real-World Case: Electrical Circuit (Mesh Currents)
+
+**Scenario:** A circuit with three loops has the resistances and sources below. Mesh-current analysis gives a linear system `R I = V`, which is solved with the same matrix tools.
+
+**Assumptions:**
+
+- Three independent loops with currents I₁, I₂, I₃ in amperes.
+- Resistance matrix `R = [[30, −20, 0], [−20, 50, −10], [0, −10, 30]]` ohms.
+- Source voltages `V = [10, 0, −5]` volts.
+
+**Results:**
+
+| Case | I₁ | I₂ | I₃ |
+|---|---|---|---|
+| Original | 0.4333 A | 0.1500 A | −0.1167 A |
+| First source 10 V → 20 V | 0.9000 A | 0.3500 A | −0.0500 A |
+| R[1,1] 30 → 60 ohm | 0.1806 A | 0.0417 A | −0.1528 A |
+
+**Interpretation:** `det(R) = 30000`, which is non-zero, so there is one unique set of loop currents, and the residual is about 10⁻¹⁵. Doubling the first source raises all the currents, since the loops share resistors. Raising the loop-1 resistance reduces the current in loop 1 most. A negative current means the current flows opposite to the direction chosen for that loop.
+
+### 8. How to Run
+
+```
+pip install numpy matplotlib
+python code/Task_05_matrix_algebra.py
+```
