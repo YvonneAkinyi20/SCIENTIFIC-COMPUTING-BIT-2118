@@ -1,0 +1,21 @@
+=== B. ORIGINAL PROBLEM ===
+IRR using Newton-Raphson: 11.542461%
+IRR using Secant method:  11.542461%
+NPV at Newton solution:   0.000000
+Newton iterations: 4 | Secant iterations: 7
+
+=== C. CHANGING THE INPUTS ===
+Baseline         : Newton 11.542461% (4 it) | Secant 11.542461% (7 it)
+Last inflow 3500 : Newton 14.456060% (5 it) | Secant 14.456060% (7 it)
+Invest 12000     : Newton 3.329828% (5 it) | Secant 3.329828% (7 it)
+
+Newton start x0=0.01: root 11.542461% in 5 iterations
+Newton start x0=0.1 : root 11.542461% in 4 iterations
+Newton start x0=0.5 : root 11.542461% in 8 iterations
+Newton start x0=1.0 : root -154.411050% in 7 iterations
+
+=== E. LOAN CASE (KES 100,000, 5% fee, 12 x 9,200) ===
+Monthly rate (Newton): 2.390531%  in 4 iterations
+Monthly rate (Secant): 2.390531%  in 6 iterations
+Nominal APR (x12):     28.6864%
+Effective annual rate: 32.7754%
