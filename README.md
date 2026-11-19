@@ -717,3 +717,29 @@ The company makes a profit between about 90 and 1110 units. The most profitable 
 pip install numpy scipy matplotlib
 python code/Task_10_bisection_fixed_point.py
 ```
+
+## Task J (Task 11): Root Finding with Newton-Raphson and Secant Methods
+
+**Program:** `code/Task_11_newton_secant.py`
+**Outputs:** `output/task_11_output.txt`, `output/task_11_diagram.png`
+
+### A. Concept
+Newton-Raphson improves a guess using x(n+1) = x(n) - f(x(n)) / f'(x(n)). It follows the tangent line toward the root. The secant method does the same but estimates the slope from the two latest points, so no derivative is needed. Both usually converge much faster than bisection when started well.
+
+**Problem:** A project costs 10,000 now and returns 3,000, 3,500, 4,000 and 2,500 at the end of years 1 to 4. Find the interest rate (the internal rate of return, IRR) that makes the net present value (NPV) equal to zero.
+
+### B. Input values and mathematical operation
+
+| Input | Value | Meaning |
+|---|---|---|
+| `cash_flows` | `[-10000, 3000, 3500, 4000, 2500]` | investment at t = 0, then yearly inflows |
+| Newton start `x0` | 0.10 | first guess (10%) |
+| Secant starts `x0`, `x1` | 0.05 and 0.20 | two first guesses |
+| `xtol` | 1e-12 | stopping tolerance |
+
+- NPV(r) = sum of CF(t) / (1 + r)^t. This is the function f(r) whose root is wanted.
+- d_npv(r) = sum of -t * CF(t) / (1 + r)^(t+1). This is f'(r), used by Newton.
+- Newton repeats r_new = r - NPV(r) / d_npv(r).
+- Secant repeats r_new = r(n) - NPV(r(n)) * (r(n) - r(n-1)) / (NPV(r(n)) - NPV(r(n-1))).
+
+Check by hand: NPV(0.10) = 332.63 and d_npv(0.10) = -22,143.92, so the first Newton step gives
