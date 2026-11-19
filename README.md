@@ -442,3 +442,93 @@ Set 3: b = [14. 12. 11.] -> x = [4.9024 5.6098 5.5366] (residual 0)
 ![Task 07 summary](output/task_07_diagram.png)
 
 **Interpretation:** Each solution satisfies all
+
+## Task G: Iterative Methods for Linear Systems
+
+**Program file:** `code/Task_08_iterative_linear.py`
+**Output graph:** `output/task_08_diagram.png`
+
+### 1. Mathematical Concept
+
+Jacobi and Gauss-Seidel methods start with an initial guess and repeatedly improve it. For each equation, solve for one unknown using the current estimates of the others. Jacobi uses only the old estimates in a sweep, while Gauss-Seidel uses each new value immediately. The process stops when the change between successive estimates is below a chosen tolerance. The methods are guaranteed to converge when the matrix is strictly diagonally dominant.
+
+### 2. Example
+
+If successive estimates of x are 1.0, 1.8, 1.97, 1.999 and 2.000, the values are converging toward 2.
+
+### 3. Real-World Applications
+
+Large sparse systems from heat transfer, electrical networks, structural models, image reconstruction and scientific simulations where direct matrix factorization may be expensive.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** A grid model of temperatures produces thousands of linear equations, most of whose coefficients are zero.
+
+**Solution approach:** Use an iterative method such as Jacobi or Gauss-Seidel. Track the error in each iteration (the maximum change in any unknown) and stop once it falls below the tolerance.
+
+### 5. Solution Code
+
+See `code/Task_08_iterative_linear.py`. It solves a 5-point temperature model with both methods, compares them with the direct solution, tests changed inputs, solves a 2-D plate case, and draws one summary diagram.
+
+**Model:** five interior grid points, left boundary 100 °C, right boundary 20 °C, `A = tridiag(−1, 2, −1)` and `b = [100, 0, 0, 0, 20]`.
+
+**Output:**
+
+```
+Jacobi temperatures       : [86.6667 73.3333 60. 46.6667 33.3333]   (150 iterations)
+Gauss-Seidel temperatures : [86.6667 73.3333 60. 46.6667 33.3333]   (75 iterations)
+Direct solution           : [86.6667 73.3333 60. 46.6667 33.3333]
+Max difference Jacobi vs direct       : 3.41e-08
+Max difference Gauss-Seidel vs direct : 2.89e-08
+```
+
+![Task 08 summary](output/task_08_diagram.png)
+
+**Interpretation:** Both methods reach the direct solution, and the temperature falls in a straight line from 100 °C to 20 °C across the grid. The error drops steadily at each iteration. Gauss-Seidel needs 75 iterations while Jacobi needs 150, about half as many, because it reuses the newest values straight away. The remaining difference of about 10⁻⁸ equals the tolerance.
+
+### 6. Changing the Inputs and Observing the Results
+
+| Change made | Result |
+|---|---|
+| Tolerance 10⁻² → 10⁻⁴ → 10⁻⁸ → 10⁻¹² | Jacobi: 54, 86, 150, 214 iterations. Gauss-Seidel: 27, 43, 75, 107. |
+| Starting guess all zeros → all 60 | Jacobi needs 32 iterations instead of 150. Starting at the exact answer needs 1. |
+| Boundaries 100/20 → 200/50 | Gauss-Seidel gives `[175, 150, 125, 100, 75]` in 78 iterations. |
+| Grid of 5, 10, 20, 40 points | Jacobi: 150, 486, 1672, 5935 iterations. Gauss-Seidel: 75, 245, 842, 2993. |
+| `A = [[1,2],[3,1]]`, `b = [3,4]` (not diagonally dominant) | Both methods diverge. The change grows from 144 to 11 664 to 1 119 744 (Jacobi, at iterations 5, 10 and 15). The direct solution `[1, 1]` works fine. |
+
+**Observations:**
+
+- A stricter tolerance costs more iterations, but only by a roughly constant amount for each extra digit of accuracy.
+- A good starting guess saves work.
+- Bigger grids converge more slowly, so very large problems need many iterations.
+- Gauss-Seidel needs about half the iterations of Jacobi in every test.
+- Diagonal dominance matters. Without it, an iterative method can blow up, even though the system itself has a solution.
+
+### 7. Related Real-World Case: Temperature of a 2-D Heated Metal Plate
+
+**Scenario:** A square metal plate has its top edge held at 100 °C and its other three edges at 20 °C. We want the steady-state temperature at every interior point. Each point's temperature is the average of its four neighbours, which gives one equation per grid point.
+
+**Assumptions:**
+
+- Steady state, no heat sources inside the plate, uniform material.
+- 20 × 20 interior grid, so 400 unknowns and a 400 × 400 matrix.
+- The 5-point Laplace stencil (each row has a 4 on the diagonal and four −1 entries), so about 98.8% of the coefficients are zero.
+- Tolerance 10⁻⁶.
+
+**Results:**
+
+| Method | Iterations | Max error vs direct solution |
+|---|---|---|
+| Jacobi | 1202 | 8.8 × 10⁻⁵ |
+| Gauss-Seidel | 631 | 4.4 × 10⁻⁵ |
+
+The hottest interior point is 92.30 °C, next to the 100 °C edge, and the centre of the plate is 38.42 °C.
+
+**Interpretation:** The heatmap shows heat spreading from the hot top edge, with temperatures dropping toward the cooler edges. Because the matrix is almost entirely zeros, each iteration only needs the four neighbours of each point. For plates with thousands or millions of points, this is much cheaper than a direct factorisation, which is why iterative methods are used for large sparse systems. Gauss-Seidel again needs about half the iterations of Jacobi.
+
+### 8. How to Run
+
+```
+pip install numpy matplotlib
+python code/Task_08_iterative_linear.py
+```
