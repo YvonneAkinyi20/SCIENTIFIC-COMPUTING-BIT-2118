@@ -1,0 +1,54 @@
+================================================================
+PART 1: 5 INTERIOR POINTS, LEFT = 100 C, RIGHT = 20 C
+================================================================
+A =
+[[ 2. -1.  0.  0.  0.]
+ [-1.  2. -1.  0.  0.]
+ [ 0. -1.  2. -1.  0.]
+ [ 0.  0. -1.  2. -1.]
+ [ 0.  0.  0. -1.  2.]]
+b = [100.   0.   0.   0.  20.]
+Diagonally dominant? True
+
+Jacobi temperatures       : [86.6667 73.3333 60.     46.6667 33.3333]   (150 iterations)
+Gauss-Seidel temperatures : [86.6667 73.3333 60.     46.6667 33.3333]   (75 iterations)
+Direct solution           : [86.6667 73.3333 60.     46.6667 33.3333]
+Max difference Jacobi vs direct       : 3.41e-08
+Max difference Gauss-Seidel vs direct : 2.89e-08
+Gauss-Seidel needed about 2.0x fewer iterations.
+
+================================================================
+PART 2: CHANGING THE INPUTS
+================================================================
+a) Tolerance (iterations needed):
+   tol =   1e-02:  Jacobi   54,  Gauss-Seidel   27
+   tol =   1e-04:  Jacobi   86,  Gauss-Seidel   43
+   tol =   1e-08:  Jacobi  150,  Gauss-Seidel   75
+   tol =   1e-12:  Jacobi  214,  Gauss-Seidel  107
+
+b) Starting guess (tol = 1e-8):
+   all zeros: 150 iterations,  all 60: 32 iterations,  exact answer: 1 iteration(s)
+
+c) Different boundary temperatures (left = 200 C, right = 50 C):
+   Gauss-Seidel: [175. 150. 125. 100.  75.]   (78 iterations)
+
+d) More grid points (tol = 1e-8):
+   n =   5:  Jacobi   150,  Gauss-Seidel    75
+   n =  10:  Jacobi   486,  Gauss-Seidel   245
+   n =  20:  Jacobi  1672,  Gauss-Seidel   842
+   n =  40:  Jacobi  5935,  Gauss-Seidel  2993
+
+e) A matrix that is NOT diagonally dominant: [[1, 2], [3, 1]], b = [3, 4]
+   Diagonally dominant? False
+   Jacobi change after 5, 10, 15 iterations: 144.0, 11664.0, 1119744.0  -> DIVERGES
+   Direct solution works fine: [1. 1.]
+
+================================================================
+PART 3: 2-D METAL PLATE (20 x 20 interior grid = 400 equations)
+================================================================
+Assumptions: steady state, square plate, edges held at top = 100 C, other three edges = 20 C.
+Matrix size 400 x 400; 98.8% of the coefficients are zero.
+Jacobi        :  1202 iterations, max error vs direct = 8.80e-05
+Gauss-Seidel  :   631 iterations, max error vs direct = 4.35e-05
+Hottest interior point: 92.30 C (next to the 100 C edge); centre of plate: 38.42 C
+
