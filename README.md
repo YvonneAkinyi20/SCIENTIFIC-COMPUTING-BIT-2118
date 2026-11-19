@@ -743,3 +743,94 @@ Newton-Raphson improves a guess using x(n+1) = x(n) - f(x(n)) / f'(x(n)). It fol
 - Secant repeats r_new = r(n) - NPV(r(n)) * (r(n) - r(n-1)) / (NPV(r(n)) - NPV(r(n-1))).
 
 Check by hand: NPV(0.10) = 332.63 and d_npv(0.10) = -22,143.92, so the first Newton step gives
+
+## Task K (Task 12): Polynomial and Nonlinear Equation Solving
+
+**Program:** `code/Task_12_nonlinear_equations.py`
+**Outputs:** `output/task_12_output.txt`, `output/task_12_diagram.png`
+
+### A. Concept
+A polynomial equation has the form a(n)x^n + ... + a(1)x + a(0) = 0. A nonlinear system has equations that are not all linear in the unknowns. Numerical solvers search for values that make every residual close to zero. For example, x² - 5x + 6 = 0 has roots 2 and 3, and `np.roots([1, -5, 6])` returns them.
+
+**Problem:** Find the intersection points of a circle and a parabola. This gives two nonlinear equations in x and y, solved with `scipy.optimize.root` from more than one starting guess.
+
+### B. Input values and mathematical operation
+
+| Input | Value | Meaning |
+|---|---|---|
+| Circle | x² + y² = 4 | circle of radius 2 centred at the origin |
+| Parabola | y = x² - 1 | upward parabola with vertex at (0, -1) |
+| Starting guesses | [1, 1] and [-1, 1] | first guesses for (x, y) |
+
+The two equations are written as residuals that must both equal zero:
+- r1(x, y) = x² + y² - 4
+- r2(x, y) = y - (x² - 1)
+
+`root` adjusts (x, y) until both residuals are near zero. Check by hand: substituting x² = y + 1 into the circle gives y² + y - 3 = 0, so y = (-1 + √13)/2 = 1.3028 (the other value, y = -2.3028, would need x² = -1.3028, which has no real solution). Then x = ±√2.3028 = ±1.5175.
+
+**Result:**
+```
+Initial guess: [1.0, 1.0]
+Intersection: [1.51748991 1.30277564]
+Residuals: [-2.47801779e-13 -2.41584530e-13]
+Converged: True
+
+Initial guess: [-1.0, 1.0]
+Intersection: [-1.51748991  1.30277564]
+Residuals: [-2.47801779e-13 -2.41584530e-13]
+Converged: True
+```
+
+### C. Changing the inputs
+
+**C1. Different starting guesses (circle of radius 2):**
+
+| Guess | Result | Max residual | Converged |
+|---|---|---|---|
+| [1, 1] | (1.51749, 1.302776) | 2.48e-13 | True |
+| [-1, 1] | (-1.51749, 1.302776) | 2.48e-13 | True |
+| [3, 3] | (1.51749, 1.302776) | 2.31e-12 | True |
+| [0, -2] | (0, -2) | 1.00 | False |
+
+**C2. Changing the circle's size (25 starting guesses each):**
+
+| Circle | Number of intersections | Points |
+|---|---|---|
+| x² + y² = 4 | 2 | (±1.517490, 1.302776) |
+| x² + y² = 1 | 3 | (±1, 0) and (0, -1) |
+| x² + y² = 0.5 | 0 | none |
+
+- Starting guesses on the upper side lead to the two real intersections, even from far away like [3, 3]. Different starting guesses can lead to different roots.
+- The guess [0, -2] failed (`Converged: False`, residual 1.00). The solver stopped without making both residuals zero. This is why the program must **check the residuals and the converged flag**, not just print a number.
+- A smaller circle (radius 1) gives 3 intersections, and an even smaller one (radius 0.707) gives none, because the circle no longer meets the parabola. In that case no starting guess can succeed.
+
+### D. Meaning of the output and the graph
+Each pair of numbers is a point that lies on both the circle and the parabola. The residuals of about 10⁻¹³ mean the equations are satisfied to machine precision, and `Converged: True` confirms it. The two answers are mirror images, (1.5175, 1.3028) and (-1.5175, 1.3028), because both curves are symmetric about the y-axis.
+
+**Graph (left panel of `output/task_12_diagram.png`):** the circle and the parabola cross at exactly two red points in the upper half. The parabola also dips down through the bottom of the circle but never meets it there, which matches the fact that the second root of y has no real x.
+
+![Task 12 graphs](output/task_12_diagram.png)
+
+### E. Related real-world case: road crossing a cell-tower coverage zone
+
+**Scenario:** A cell tower at the origin covers a circular area of radius 5 km. A road curves along y = 0.1x² - 3 (distances in km). Find where the road enters and leaves the coverage zone.
+
+**Assumptions:**
+- The coverage zone is a perfect circle of radius 5 km with no obstacles.
+- The road is modelled by a parabola.
+- Both equations use the same coordinates in km, with the tower at (0, 0).
+
+**Input data:** circle x² + y² = 25, road y = 0.1x² - 3, starting guesses [4, -1] and [-4, -1].
+
+**Output:**
+```
+Boundary crossing: x = 4.9721 km, y = -0.5279 km
+Boundary crossing: x = -4.9721 km, y = -0.5279 km
+Road is inside coverage for x between -4.9721 and 4.9721 km
+Horizontal distance covered: 9.9441 km
+```
+
+**Interpretation:** The road enters the coverage zone at about (-4.97, -0.53) and leaves at about (4.97, -0.53). Between those points a phone on the road has coverage, over a horizontal stretch of about 9.94 km. The road's lowest point (0, -3) is 3 km from the tower, which is inside the 5 km range, so the road is covered in the middle and uncovered at the two ends. In the right panel of the graph, the red points mark where the road crosses the coverage boundary. This is the same method as the circle and parabola problem, applied to a different physical situation.
+
+### F. Submission note
+The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
