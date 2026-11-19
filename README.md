@@ -532,3 +532,98 @@ The hottest interior point is 92.30 °C, next to the 100 °C edge, and the centr
 pip install numpy matplotlib
 python code/Task_08_iterative_linear.py
 ```
+
+## Task H: Eigenvalues and Eigenvectors
+
+**Program file:** `code/Task_09_eigenvalues.py`
+**Output graph:** `output/task_09_diagram.png`
+
+### 1. Mathematical Concept
+
+For a square matrix `A`, an eigenvector `v` is a non-zero vector whose direction is unchanged by the transformation `A`. It satisfies `Av = λv`, where `λ` is the eigenvalue. The eigenvalue tells how much the vector is stretched, compressed or reversed. For a connected network, the eigenvector of the largest eigenvalue (the dominant eigenvector) has all positive entries and can be used as a measure of node importance.
+
+### 2. Example
+
+If `Av = 3v`, then `v` is an eigenvector and 3 is its eigenvalue. Applying `A` triples the magnitude of `v` without changing its direction. For `A = [[2,1],[1,2]]` and `v = [1,1]`: `Av = [3,3] = 3v`.
+
+### 3. Real-World Applications
+
+Google PageRank concepts, vibration analysis, stability of dynamical systems, principal component analysis, image compression, quantum models and network centrality.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** A small computer network needs to identify which nodes are structurally most influential from their pattern of connections.
+
+**Solution approach:** Represent the network as an adjacency matrix, compute its dominant eigenvalue and eigenvector with `np.linalg.eig`, and normalize the dominant eigenvector so the scores add up to 1. This gives an eigenvector-based node-importance measure. Verify the result with `Av = λv`.
+
+### 5. Solution Code
+
+See `code/Task_09_eigenvalues.py`. It checks the eigenvector idea on a small matrix, computes the importance of each node, tests changed networks, solves a building-vibration case, and draws one summary diagram.
+
+**Network:** nodes A, B, C, D with links A–B, A–C, B–C, B–D and C–D. A and D have 2 links each, and B and C have 3 each.
+
+**Output:**
+
+```
+All eigenvalues: [ 2.5616 -0.     -1.     -1.5616]
+Dominant eigenvalue: 2.5616
+Eigenvector-based importance:
+   A: 0.2192   (number of links = 2)
+   B: 0.2808   (number of links = 3)
+   C: 0.2808   (number of links = 3)
+   D: 0.2192   (number of links = 2)
+Verification error ||A v - lambda v||: 1.51e-15
+```
+
+![Task 09 summary](output/task_09_diagram.png)
+
+**Interpretation:** The dominant eigenvalue is 2.5616. B and C are the most influential nodes (0.2808 each), and A and D are less influential (0.2192 each), which matches the network, where B and C have the most links. The importance score is not just the link count: a node scores higher when its neighbours are themselves well connected. The verification error is about 10⁻¹⁵, so `Av = λv` holds to machine precision. The graph also shows that power iteration (repeatedly multiplying by `A`) finds the same vector without calling `eig`.
+
+### 6. Changing the Inputs and Observing the Results
+
+| Change made | Dominant eigenvalue | Importance (A, B, C, D) | Result |
+|---|---|---|---|
+| Original network | 2.5616 | 0.219, 0.281, 0.281, 0.219 | B and C lead. |
+| Add link A–D | 3.0000 | 0.25 each | Every node now has 3 links, so all are equal. |
+| Remove link B–C | 2.0000 | 0.25 each | The network is a 4-node ring, so all are equal. |
+| Star centred on B | 1.7321 | 0.211, 0.366, 0.211, 0.211 | B is clearly the most influential. |
+| Link B–C weight 3 | 4.0000 | 0.167, 0.333, 0.333, 0.167 | B and C gain even more importance. |
+| Disconnected (A–B and C–D only) | 1 (repeated) | not meaningful | The eigenvector is not unique. |
+
+**Observations:**
+
+- Adding links raises the dominant eigenvalue (2.56 → 3.00), and removing links lowers it (2.56 → 2.00).
+- When every node is equivalent, the scores are equal.
+- In a star, the hub gets the highest score.
+- For a disconnected network the dominant eigenvalue is repeated, so the importance scores are not defined.
+- Eigenvectors can come out with either sign, so the code flips the sign and uses absolute values.
+
+### 7. Related Real-World Case: Vibration of a 3-Storey Building
+
+**Scenario:** A structural engineer needs the natural frequencies and vibration shapes of a three-storey building, to check them against earthquake or wind frequencies. These come from an eigenvalue problem `(K/m) v = ω² v`.
+
+**Assumptions:**
+
+- Three floors, each with a mass of 10 000 kg, connected by springs of stiffness 2 × 10⁶ N/m.
+- Linear behaviour, sideways motion only, no damping.
+- Stiffness matrix `K = 2×10⁶ × [[2,−1,0],[−1,2,−1],[0,−1,1]]`.
+- The eigenvalues of `K/m` are ω² (in rad²/s²), and the frequency is `f = ω / 2π`.
+
+**Results:**
+
+| Mode | ω² | Frequency | Shape (floors 1, 2, 3) |
+|---|---|---|---|
+| 1 | 39.61 | 1.002 Hz | 0.328, 0.591, 0.737 |
+| 2 | 310.99 | 2.807 Hz | −0.737, −0.328, 0.591 |
+| 3 | 649.40 | 4.056 Hz | 0.591, −0.737, 0.328 |
+
+Doubling the stiffness multiplies every frequency by √2 (1.002 → 1.417 Hz for mode 1). Doubling the floor mass divides every frequency by √2 (1.002 → 0.708 Hz).
+
+**Interpretation:** The lowest mode (1.00 Hz) has all floors moving the same way, with the top floor moving most. This is the mode most easily excited by wind or earthquakes. Higher modes have floors moving in opposite directions and vibrate faster. A stiffer building vibrates faster and a heavier building vibrates slower, which is why engineers change stiffness or mass to move the natural frequencies away from dangerous forcing frequencies.
+
+### 8. How to Run
+
+```
+pip install numpy matplotlib
+python code/Task_09_eigenvalues.py
+```
