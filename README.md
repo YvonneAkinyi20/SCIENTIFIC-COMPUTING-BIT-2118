@@ -307,3 +307,87 @@ Determinant: 3.0000
 pip install numpy matplotlib
 python code/Task_05_matrix_algebra.py
 ```
+
+## Task E: Solution of Systems of Linear Equations
+
+**Program file:** `code/Task_06_linear_systems.py`
+**Output graph:** `output/task_06_diagram.png`
+
+### 1. Mathematical Concept
+
+Many problems can be written as `Ax = b`, where `A` contains the coefficients, `x` contains the unknowns and `b` contains the known results. Solving the system means finding `x` so that multiplying `A` by `x` reproduces `b`. A unique solution exists when `det(A) ≠ 0`. With two unknowns, each equation is a straight line and the solution is the point where the lines cross.
+
+### 2. Example
+
+`2x + 3y = 8` and `4x + y = 6` become `A = [[2,3],[4,1]]` and `b = [8,6]`. The solution is `x = 1`, `y = 2`, because `2(1) + 3(2) = 8` and `4(1) + 2 = 6`.
+
+### 3. Real-World Applications
+
+Electrical circuit analysis, resource allocation, traffic-flow models, balancing chemical equations, computer graphics and estimating unknown parameters.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** Two server types consume different amounts of CPU and memory. Given the total CPU and memory usage, determine how many servers of each type are active.
+
+**Solution approach:** Let `x` be the number of Type A servers and `y` the number of Type B servers. Form two simultaneous equations from the resource totals and solve `Ax = b` with `np.linalg.solve()`. Verify with `A @ x` and the residual `b − A @ x`.
+
+| | CPU units | Memory (GB) |
+|---|---|---|
+| Type A | 4 | 8 |
+| Type B | 2 | 12 |
+| Observed total | 20 | 72 |
+
+`4x + 2y = 20` and `8x + 12y = 72`
+
+### 5. Solution Code
+
+See `code/Task_06_linear_systems.py`. It solves the textbook example and the server problem, tests variations of the input values, handles singular systems, flags answers that are not realistic (fractional or negative server counts), and draws one summary diagram.
+
+**Output:**
+
+```
+Type A servers: 3
+Type B servers: 4
+Verification A @ solution: [20. 72.]
+Residual: [0. 0.]
+Residual norm: 0.0
+```
+
+![Task 06 summary](output/task_06_diagram.png)
+
+**Interpretation:** There are 3 Type A servers and 4 Type B servers. Check: CPU = 4(3) + 2(4) = 20 and memory = 8(3) + 12(4) = 72. The residual is zero, so the solution reproduces the observed totals exactly. On the graph, the two lines cross at the point (3, 4).
+
+### 6. Changing the Inputs and Observing the Results
+
+| Variation | Input change | Type A | Type B | Status |
+|---|---|---|---|---|
+| 1. Original | `b = [20, 72]` | 3 | 4 | Valid |
+| 2. Different coefficients | `A = [[3,1],[2,5]]`, `b = [14, 24]` | 3.5385 | 3.3846 | Solved, but not whole |
+| 3. Fractional answer | `b = [21, 70]` | 3.5 | 3.5 | Solved, but not whole |
+| 4. Negative answer | `b = [2, −8]` | 1.25 | −1.5 | Solved, but not realistic |
+| 5. Singular | `A = [[4,2],[8,4]]`, `b = [20, 50]` | none | none | No unique solution |
+
+**Observations:**
+
+- A system can be solved mathematically and still not make sense in the real world. Server counts must be whole, non-negative numbers, so variations 2, 3 and 4 are rejected even though `np.linalg.solve()` returns an answer for them.
+- In variation 5, the second row of `A` is exactly twice the first row, so `det(A) = 0`. The two lines are parallel, never cross, and `np.linalg.solve()` raises an error, which the program catches.
+- The original `A` has `det = 32`, which is non-zero, so any `b` gives a unique answer. Only the interpretation of that answer can fail.
+
+### 7. Related Real-World Case: Three Server Types (CPU, Memory and Power)
+
+**Scenario:** A data centre runs three server types and records the total CPU, memory and power use. The task is to find how many of each type are active.
+
+**Assumptions:**
+
+- `x`, `y` and `z` are the numbers of Type A, B and C servers.
+- Each type uses fixed amounts of CPU, memory and power.
+- The observed totals are 22 CPU units, 80 GB memory and 21 power units.
+
+| | CPU | Memory (GB) | Power |
+|---|---|---|---|
+| Type A | 4 | 8 | 3 |
+| Type B | 2 | 12 | 2 |
+| Type C | 1 | 4 | 2 |
+| Observed total | 22 | 80 | 21 |
+
+**System
