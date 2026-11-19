@@ -834,3 +834,92 @@ Horizontal distance covered: 9.9441 km
 
 ### F. Submission note
 The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
+
+## Task L (Task 13): Interpolation
+
+**Program:** `code/Task_13_interpolation.py`
+**Outputs:** `output/task_13_output.txt`, `output/task_13_diagram.png`
+
+### A. Concept
+Interpolation estimates values between known data points. Linear interpolation draws a straight line between neighbouring points. Polynomial interpolation fits one polynomial through several points. A cubic spline joins smooth cubic curves so the curve stays smooth where the pieces meet. For example, if the temperature is 20 C at 10:00 and 24 C at 12:00, linear interpolation estimates 22 C at 11:00 (the program confirms this).
+
+**Problem:** A sensor records the temperature every hour, but an application needs estimates every 10 minutes. We build interpolation functions with `scipy.interpolate` from the hourly measurements and evaluate them at the in-between times.
+
+### B. Input values and mathematical operation
+
+| Input | Value |
+|---|---|
+| `hours` | 8, 9, 10, 11, 12, 13, 14 |
+| `temperature` (C) | 18.0, 20.0, 22.5, 24.0, 25.0, 25.5, 25.0 |
+| Evaluation times | every 10 minutes (1/6 hour) from 08:00 to 14:00, which is 37 points |
+| Target time | 10:30 (`10.5`) |
+
+- **Linear** (`interp1d`): between two points (x0, y0) and (x1, y1), the estimate is y = y0 + (y1 - y0) * (x - x0) / (x1 - x0).
+- **Cubic spline** (`CubicSpline`): a separate cubic polynomial on each hour, chosen so that the curve and its first and second derivatives match where the pieces join.
+
+Check by hand: at 10:30 the linear estimate is the midpoint of 22.5 and 24.0, which is 23.25.
+
+**Result:**
+```
+Linear estimate at 10:30: 23.25 C
+Cubic estimate at 10:30:  23.36 C
+Number of 10-minute estimates: 37
+```
+
+### C. Changing the inputs
+
+**C1. Change one measurement (11:00 changed from 24.0 to 27.0):**
+
+| Estimate | Before | After |
+|---|---|---|
+| Linear at 10:30 | 23.25 C | 24.75 C |
+| Cubic at 10:30 | 23.36 C | 25.18 C |
+| Linear at 12:30 | 25.25 C | 25.25 C |
+| Cubic at 12:30 | 25.34 C | 24.86 C |
+
+**C2. Use only every 2 hours (08, 10, 12, 14) and estimate the hours left out:**
+
+| Time | Actual | Linear | Error | Cubic | Error |
+|---|---|---|---|---|---|
+| 09:00 | 20.00 | 20.25 | +0.25 | 20.47 | +0.47 |
+| 11:00 | 24.00 | 23.75 | -0.25 | 24.03 | +0.03 |
+| 13:00 | 25.50 | 25.00 | -0.50 | 25.34 | -0.16 |
+
+**C3. Estimating outside the data range (14:30):** `interp1d` raises a `ValueError`, while `CubicSpline` silently extrapolates to 24.20 C.
+
+- Linear interpolation only reacts to the two neighbouring points: changing 11:00 left the linear estimate at 12:30 unchanged. The cubic spline is global, so the same change also moved the estimate at 12:30 (25.34 to 24.86).
+- With fewer data points, the cubic spline was usually closer to the true values (at 11:00 its error was +0.03 against -0.25 for linear), but not always: at 09:00 linear was closer.
+- Extrapolating beyond the measured times is unreliable and should be avoided.
+
+### D. Meaning of the output and the graph
+At 10:30 the temperature is estimated at about **23.25 C** (linear) or **23.36 C** (cubic). Both are reasonable because they lie between the 10:00 reading (22.5 C) and the 11:00 reading (24.0 C). The cubic value is slightly higher because the temperature is rising quickly at that point, and the spline curve bends upward with it. In total, the program produces 37 estimates covering every 10 minutes from 08:00 to 14:00.
+
+**Graph (left panel of `output/task_13_diagram.png`):** the black dots are the hourly measurements. The linear estimate is a set of straight segments with corners at each measurement. The cubic spline is a smooth curve through the same points, which flattens naturally around the 13:00 peak. Both pass exactly through the measured points and differ only in between.
+
+![Task 13 graphs](output/task_13_diagram.png)
+
+### E. Related real-world case: solar panel power output
+
+**Scenario:** A solar panel's power output (kW) is recorded every hour from 06:00 to 18:00. We need the output at times between readings and the total energy produced in the day.
+
+**Assumptions:**
+- The measurements below are assumed (illustrative) data, not real readings.
+- Output is zero at 06:00 and 18:00 and peaks around midday.
+- No clouds or other sudden changes happen between readings.
+
+**Input data (kW, hourly from 06:00):** 0.0, 0.4, 1.2, 2.1, 2.8, 3.2, 3.3, 3.0, 2.4, 1.6, 0.8, 0.2, 0.0
+
+**Output:**
+```
+Estimate at 10:45: linear 3.100 kW | cubic 3.126 kW
+Estimate at 15:20: linear 1.333 kW | cubic 1.323 kW
+Energy produced, trapezoid on hourly data: 21.000 kWh
+Energy produced, cubic spline integral:    21.003 kWh
+Lowest cubic value between measurements:   -0.004 kW
+Highest cubic value between measurements:  3.311 kW (highest measurement 3.3 kW)
+```
+
+**Interpretation:** The panel is estimated to produce about 3.1 kW at 10:45 and about 1.3 kW at 15:20. Over the day it produces about **21.0 kWh**, and both methods agree closely, so the choice of method hardly matters for the total. The cubic spline does show a small weakness: between 06:00 and 07:00 it dips to -0.004 kW, which is impossible for real power, and it slightly overshoots the highest measurement (3.311 kW against 3.3 kW). In practice such estimates should be clipped at zero, and linear interpolation is the safer choice when values must never leave the measured range.
+
+### F. Submission note
+The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.

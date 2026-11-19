@@ -1,0 +1,43 @@
+=== A. SIMPLE EXAMPLE: 20 C at 10:00 and 24 C at 12:00 ===
+Linear estimate at 11:00: 22.00 C
+
+=== B. ORIGINAL PROBLEM: hourly temperatures, estimate every 10 minutes ===
+Inputs: hours       = [ 8.  9. 10. 11. 12. 13. 14.]
+        temperature = [18.  20.  22.5 24.  25.  25.5 25. ]
+Linear estimate at 10:30: 23.25 C
+Cubic estimate at 10:30:  23.36 C
+Number of 10-minute estimates: 37
+
+Time   Linear   Cubic
+09:00   20.00   20.00
+09:10   20.42   20.44
+09:20   20.83   20.88
+09:30   21.25   21.32
+09:40   21.67   21.74
+09:50   22.08   22.14
+10:00   22.50   22.50
+
+=== C. CHANGING THE INPUTS ===
+C1. Measurement at 11:00 changed from 24.0 to 27.0:
+  Linear at 10:30: 23.25 -> 24.75 C
+  Cubic  at 10:30: 23.36 -> 25.18 C
+  Linear at 12:30: 25.25 -> 25.25 C
+  Cubic  at 12:30: 25.34 -> 24.86 C
+
+C2. Only every 2 hours used (08, 10, 12, 14); estimate the left-out hours:
+Time   Actual  Linear  err    Cubic   err
+09:00   20.00   20.25  +0.25   20.47  +0.47
+11:00   24.00   23.75  -0.25   24.03  +0.03
+13:00   25.50   25.00  -0.50   25.34  -0.16
+
+C3. Estimating outside the data range (at 14:30):
+  Linear interp1d: ValueError (value above the interpolation range)
+  CubicSpline extrapolates silently: 24.20 C
+
+=== E. REAL-WORLD CASE: solar panel output measured hourly ===
+Estimate at 10:45: linear 3.100 kW | cubic 3.126 kW
+Estimate at 15:20: linear 1.333 kW | cubic 1.323 kW
+Energy produced, trapezoid on hourly data: 21.000 kWh
+Energy produced, cubic spline integral:    21.003 kWh
+Lowest cubic value between measurements:   -0.004 kW
+Highest cubic value between measurements:  3.311 kW (highest measurement 3.3 kW)
