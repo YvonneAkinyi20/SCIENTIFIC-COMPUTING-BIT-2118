@@ -1,0 +1,44 @@
+=== A. POLYNOMIAL EXAMPLE: x^2 - 5x + 6 = 0 ===
+Roots: [3. 2.]
+
+=== B. ORIGINAL PROBLEM: circle x^2+y^2=4 and parabola y=x^2-1 ===
+Initial guess: [1.0, 1.0]
+Intersection: [1.51748991 1.30277564]
+Residuals: [-2.47801779e-13 -2.41584530e-13]
+Converged: True
+
+Initial guess: [-1.0, 1.0]
+Intersection: [-1.51748991  1.30277564]
+Residuals: [-2.47801779e-13 -2.41584530e-13]
+Converged: True
+
+=== C. CHANGING THE INPUTS ===
+C1. Different starting guesses (circle radius 2):
+  guess [1.0, 1.0]   -> [1.51749  1.302776]  max residual 2.48e-13  converged: True
+  guess [-1.0, 1.0]  -> [-1.51749   1.302776]  max residual 2.48e-13  converged: True
+  guess [3.0, 3.0]   -> [1.51749  1.302776]  max residual 2.31e-12  converged: True
+  guess [0.0, -2.0]  -> [ 0. -2.]  max residual 1.00e+00  converged: False
+
+C2. Changing the circle's size (many starting guesses):
+  x^2+y^2=4  (radius 2.000) -> 2 intersection(s)
+      (-1.517490, 1.302776)
+      (1.517490, 1.302776)
+  x^2+y^2=1  (radius 1.000) -> 3 intersection(s)
+      (-1.000000, 0.000000)
+      (-0.000000, -1.000000)
+      (1.000000, 0.000000)
+  x^2+y^2=0.5  (radius 0.707) -> 0 intersection(s)
+
+=== E. REAL-WORLD CASE: road crossing a 5 km cell-tower coverage zone ===
+Initial guess: [4.0, -1.0]
+Boundary crossing: x = 4.9721 km, y = -0.5279 km
+Residuals: [-1.50670587e-11 -8.83737528e-14]
+Converged: True
+
+Initial guess: [-4.0, -1.0]
+Boundary crossing: x = -4.9721 km, y = -0.5279 km
+Residuals: [-1.50706114e-11 -8.82627305e-14]
+Converged: True
+
+Road is inside coverage for x between -4.9721 and 4.9721 km
+Horizontal distance covered: 9.9441 km
