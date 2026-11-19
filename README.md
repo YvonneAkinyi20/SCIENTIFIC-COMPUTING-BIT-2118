@@ -627,3 +627,93 @@ Doubling the stiffness multiplies every frequency by √2 (1.002 → 1.417 Hz fo
 pip install numpy matplotlib
 python code/Task_09_eigenvalues.py
 ```
+
+## Task I: Root Finding: Bisection and Fixed-Point Methods
+
+**Program file:** `code/Task_10_bisection_fixed_point.py`
+**Output graph:** `output/task_10_diagram.png`
+
+### 1. Mathematical Concept
+
+A root of `f(x)` is a value `r` for which `f(r) = 0`. Bisection starts with an interval `[a, b]` where `f(a)` and `f(b)` have opposite signs, repeatedly halves the interval and keeps the half that contains a root. Fixed-point iteration rewrites the equation as `x = g(x)` and repeatedly calculates `xₙ₊₁ = g(xₙ)`. Bisection always converges once a root is bracketed, but slowly. Fixed-point iteration is faster when it converges, but only if `|g′(x)| < 1` near the root.
+
+### 2. Example
+
+For `f(x) = x³ − x − 2`, `f(1) = −2` and `f(2) = 4`, so a root lies between 1 and 2. The first midpoints are 1.5, 1.75, 1.625, 1.5625, ... and they close in on the root 1.521380.
+
+### 3. Real-World Applications
+
+Finding break-even points, solving engineering equations, computing interest rates, calibration, physical equilibrium and threshold values.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** Determine the temperature at which a nonlinear heat-balance equation becomes zero.
+
+**Solution approach:** Define the heat-balance function `f(T) = T − 25 − 10·exp(−T/20)`, bracket a sign change in `[20, 40]` and apply the bisection method. Stop when the interval or the function value is sufficiently small. As a check, rewrite the equation as `T = 25 + 10·exp(−T/20)` and use fixed-point iteration.
+
+### 5. Solution Code
+
+See `code/Task_10_bisection_fixed_point.py`. It writes out both methods, compares them with `scipy`, tests changed inputs, solves a break-even case, and draws one summary diagram.
+
+**Output:**
+
+```
+f(20) = -8.6788, f(40) = 13.6466  -> sign change in [20, 40]
+Bisection (own code)     : 27.525211 C   (38 iterations)
+Bisection (scipy)        : 27.525211 C   (38 iterations)
+Fixed-point iteration    : 27.525211 C   (13 iterations)
+Check f(root) = -7.55e-11
+|g'(T)| at the root = 0.126  (< 1, so fixed-point iteration converges)
+```
+
+![Task 10 summary](output/task_10_diagram.png)
+
+**Interpretation:** The heat balance is zero at an equilibrium temperature of 27.5252 °C, and both methods agree. Bisection needs 38 halvings, because each step only gains one binary digit of accuracy. Fixed-point iteration needs only 13 steps, because `|g′(T)| ≈ 0.126` at the root, so each step cuts the error by about a factor of 8. On the cobweb graph, the iteration spirals into the point where `g(T)` crosses the line `y = T`.
+
+### 6. Changing the Inputs and Observing the Results
+
+| Change made | Result |
+|---|---|
+| Tolerance 10⁻² → 10⁻⁴ → 10⁻⁶ → 10⁻¹⁰ → 10⁻¹⁴ | Bisection: 11, 18, 25, 38, 51 iterations. Fixed point: 4, 6, 9, 13, 18. |
+| Bracket `[20, 40]` → `[0, 100]` | 38 → 40 iterations. A wider bracket costs only a little extra. |
+| Fixed-point start 25, 30, 100 | Same answer (27.525211 °C) in 13, 13 and 14 iterations. |
+| Bracket `[30, 40]` (no sign change) | The code raises a `ValueError`, because no root is guaranteed. |
+| Different rearrangement `T = −20 ln((T−25)/10)` | Does not converge. The values jump between about −81 and 599 (`|g′| ≈ 7.9 > 1`). |
+| Stronger heat source (10 → 40) | Root moves to 32.7706 °C. Bisection 39 iterations, fixed point 27. |
+
+**Observations:**
+
+- Each extra digit of accuracy costs bisection about 3.3 more halvings, because the interval halves every time.
+- Fixed-point iteration is faster, but only for a rearrangement with `|g′| < 1`. The same equation can converge or fail depending on how it is rewritten.
+- Bisection needs a sign change, and it fails safely with an error when there isn't one.
+- The starting guess hardly matters when fixed point converges.
+- A stronger heat source makes `|g′|` larger, so fixed point needs more steps (27 instead of 13).
+
+### 7. Related Real-World Case: Break-Even Points of a Business
+
+**Scenario:** A company sells `q` units. The price falls as volume grows, so revenue is `R(q) = 80q − 0.03q²`. The cost is `C(q) = 5000 + 20q + 0.02q²`. The break-even points are where profit `f(q) = R(q) − C(q) = 60q − 0.05q² − 5000` equals zero.
+
+**Assumptions:**
+
+- Every unit produced is sold.
+- Prices and costs follow the formulas above.
+- There are two break-even points, so each is bracketed separately: `[0, 500]` and `[500, 1500]`.
+- Tolerance 10⁻⁸.
+
+**Results:**
+
+| Method | q₁ (lower) | q₂ (upper) |
+|---|---|---|
+| Bisection | 90.0980 units | 1109.9020 units |
+| Exact (quadratic formula) | 90.0980 units | 1109.9020 units |
+
+The company makes a profit between about 90 and 1110 units. The most profitable volume is 600 units, with a profit of 13 000.
+
+**Interpretation:** Below 90 units the fixed costs are not covered, and above 1110 units the falling price and rising cost wipe out the profit again. Bisection finds both roots as long as each is bracketed. Fixed-point iteration `q = (5000 + 0.05q²)/60` finds only the lower root (in 16 steps from `q₀ = 200`). From `q₀ = 1200` it runs away, because `|g′|` is larger than 1 at the upper root. This shows why bisection is the safer method when there are several roots.
+
+### 8. How to Run
+
+```
+pip install numpy scipy matplotlib
+python code/Task_10_bisection_fixed_point.py
+```
