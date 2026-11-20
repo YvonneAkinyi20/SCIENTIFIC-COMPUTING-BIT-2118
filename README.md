@@ -1318,3 +1318,120 @@ Euler (h=1) first reaches half the capacity (500) at day 9; exact solution reach
 
 ### F. Submission note
 The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
+
+## Task Q (Task 18): Numerical Solution of ODEs Using SciPy
+
+**Program:** `code/Task_18_scipy_ode.py`
+**Outputs:** `output/task_18_output.txt`, `output/task_18_diagram.png`
+
+### A. Concept
+More advanced ODE solvers use higher-order methods and adjust their step size automatically. `scipy.integrate.solve_ivp` solves dy/dt = f(t, y) over a time interval and returns the approximate values at the requested times, so the updates do not have to be written by hand as in Euler's method. For example, for exponential decay dy/dt = -0.5y with y(0) = 10, `solve_ivp` gives y(2) = 3.6788 and y(4) = 1.3534, which match the exact values 10·e^(-0.5t).
+
+**Problem:** Model the voltage across a capacitor in an RC circuit as it charges. The circuit equation is written as a Python function and passed to `solve_ivp` with the initial voltage and the time interval.
+
+### B. Input values and mathematical operation
+
+| Input | Value | Meaning |
+|---|---|---|
+| `Vs` | 5.0 V | supply voltage |
+| `R` | 1000 ohm | resistance |
+| `C` | 0.001 F | capacitance |
+| `V0` | 0.0 V | initial capacitor voltage |
+| Time interval | 0 to 5 s | 200 output times (`t_eval`) |
+| `rtol`, `atol` | 1e-9, 1e-11 | solver accuracy settings |
+
+The ODE is dV/dt = (Vs - V) / (R·C). The product R·C = 1.0 s is the time constant τ. The exact solution, V(t) = Vs·(1 - e^(-t/RC)), is used only to check the solver.
+
+Check by hand: after one time constant the voltage should be 5 × (1 - e^(-1)) = 3.1606 V (63.2% of Vs), and after 5 s it should be 5 × (1 - e^(-5)) = 4.9663 V. Both match the program.
+
+**Result:**
+```
+Solver success: True
+Capacitor voltage at 5 s: 4.9663 V
+Maximum error against exact solution: 9.282e-10 V
+
+Time(s)  Voltage(V)  Fraction of Vs
+   0.0     0.0000        0.0%
+   1.0     3.1606       63.2%
+   2.0     4.3233       86.5%
+   3.0     4.7511       95.0%
+   5.0     4.9663       99.3%
+```
+
+### C. Changing the inputs
+
+**C1. Changing R and C:**
+
+| R (ohm) | C (F) | τ = RC (s) | V at 1 s | Time to reach 90% of Vs |
+|---|---|---|---|---|
+| 1000 | 0.0010 | 1.000 | 3.1606 V | 2.305 s |
+| 2000 | 0.0010 | 2.000 | 1.9673 V | 4.607 s |
+| 1000 | 0.0005 | 0.500 | 4.3233 V | 1.153 s |
+| 500 | 0.0010 | 0.500 | 4.3233 V | 1.153 s |
+
+Theory predicts the time to reach 90% is τ·ln(10) = 2.303·τ, which agrees with the table (the small differences come from the 0.0025 s output spacing).
+
+**C2. Discharging (start at 5 V, supply 0 V):** the voltage at 1 s is 1.8395 V (theory: 5·e^(-1) = 1.8394 V) and at 5 s it is 0.0337 V. The maximum error is 1.1e-9 V.
+
+**C3. Solver method and tolerance (charging circuit):**
+
+| Method | rtol | Max error (V) | Function evaluations |
+|---|---|---|---|
+| RK45 | 1e-3 | 6.6e-4 | 56 |
+| RK45 | 1e-6 | 8.7e-7 | 122 |
+| RK45 | 1e-9 | 9.3e-10 | 386 |
+| RK23 | 1e-3 | 1.4e-2 | 44 |
+| RK23 | 1e-6 | 7.4e-6 | 296 |
+| RK23 | 1e-9 | 7.0e-9 | 2798 |
+| Radau | 1e-3 | 2.7e-4 | 85 |
+| Radau | 1e-6 | 4.8e-7 | 287 |
+| Radau | 1e-9 | 4.9e-10 | 1435 |
+
+**C4. Square-wave supply (5 V on for 2 s, then 0 V for 2 s, repeating):** the capacitor voltage is 4.3211 V at 2 s, 0.5854 V at 4 s, 4.3972 V at 6 s and 0.5964 V at 8 s.
+
+- The speed of charging depends only on the product R·C. Doubling R doubles τ and halves the speed, and halving either R or C doubles the speed, which is why the last two rows are identical.
+- Discharging is the mirror image of charging. The same code works by changing only the supply voltage and the initial voltage.
+- Tighter tolerance gives smaller errors but needs more function evaluations. For this simple problem RK45 reaches an error of 9.3e-10 V with 386 evaluations, while RK23 needs 2798 for a similar accuracy, so the choice of method matters for efficiency. Radau is intended for "stiff" problems and is not needed here.
+- With the square wave the capacitor never reaches the full 5 V or 0 V, because each 2 s phase is only 2τ long. The first value (4.3211 V) differs from the theoretical 4.3233 V by about 0.002 V because the supply voltage jumps suddenly. Solvers assume a smooth equation, so for switching circuits it is better to solve each phase separately or use a small `max_step`.
+
+### D. Meaning of the output and the graph
+The capacitor starts empty and charges quickly at first and then more slowly, because the current through the resistor falls as the capacitor voltage approaches the supply voltage. After one time constant (1 s) it has reached 63.2% of the supply (3.16 V), after 3 s about 95%, and after 5 s **4.9663 V**, which is 99.3% of 5 V. The tiny maximum error of 9.3e-10 V against the exact solution shows the numerical result can be trusted.
+
+**Graphs (`output/task_18_diagram.png`):**
+- Top left: the `solve_ivp` curve and the exact curve lie on top of each other. The dotted lines mark t = RC and 63.2% of Vs.
+- Top right: a larger R gives a slower rise. The dashed black curve shows the discharging case, which falls from 5 V towards 0 V.
+- Bottom left: the capacitor voltage rises while the supply is on and decays while it is off, following the square wave but never fully reaching it.
+
+![Task 18 graphs](output/task_18_diagram.png)
+
+### E. Related real-world case: SIR epidemic model
+
+**Scenario:** An infectious disease spreads in a population of 1000 people. Each person is Susceptible (S), Infected (I) or Recovered (R). This is a **system of three ODEs**, which `solve_ivp` handles as easily as one:
+- dS/dt = -β·S·I/N
+- dI/dt = β·S·I/N - γ·I
+- dR/dt = γ·I
+
+**Assumptions:**
+- The parameter values are assumed (illustrative), not fitted to a real outbreak.
+- N = 1000 people, with one infected person at the start.
+- Infection rate β = 0.30 per day, recovery rate γ = 0.10 per day, so the basic reproduction number is R0 = β/γ = 3.
+- The population is closed (no births, deaths or travel) and recovered people are immune.
+
+**Output:**
+```
+Basic reproduction number R0 = beta/gamma = 3.0
+Solver success: True
+Peak infections: 300.8 people on day 38.4
+Total ever infected by day 160: 940.5 of 1000 (94.1%)
+Never infected (still susceptible): 59.5
+Conservation check, max |S+I+R-N|: 5.68e-13
+beta = 0.15 (R0 = 1.5): peak    63.7 infected, total infected  583.9
+beta = 0.20 (R0 = 2.0): peak   153.9 infected, total infected  797.2
+beta = 0.30 (R0 = 3.0): peak   300.8 infected, total infected  940.6
+```
+(The 940.6 in the last line comes from a longer 400-day run, which is why it differs slightly from 940.5 at day 160.)
+
+**Interpretation:** With R0 = 3, the epidemic peaks on about day 38 with roughly 301 people infected at once, and by the end about 94% of the population has been infected. About 60 people are never infected, because the epidemic dies out once there are too few susceptible people left to keep it going. The model keeps S + I + R equal to 1000 to within 6e-13, which confirms the solver is accurate. Lowering the infection rate (for example through distancing or hygiene) lowers and flattens the peak: with β = 0.15 the peak falls from 301 to about 64 people and the total infected from 941 to 584. This is the same `solve_ivp` method as the RC circuit, applied to three connected equations.
+
+### F. Submission note
+The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
