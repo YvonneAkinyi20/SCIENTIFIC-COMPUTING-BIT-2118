@@ -923,3 +923,109 @@ Highest cubic value between measurements:  3.311 kW (highest measurement 3.3 kW)
 
 ### F. Submission note
 The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
+
+## Task M: Curve Fitting and Approximation
+
+**Program file:** `code/Task_14_curve_fitting.py`
+**Output graph:** `output/task_14_diagram.png`
+
+### 1. Mathematical Concept
+
+Curve fitting chooses model parameters so that a mathematical function follows observed data as closely as possible. In least squares, the parameters minimize `Σ(yᵢ − ŷᵢ)²`, the sum of squared residuals between the observations `yᵢ` and the model predictions `ŷᵢ`. The root mean squared error `RMSE = √(mean of the squared residuals)` measures the typical size of the error in the units of the data, and `R²` measures the share of the variation that the model explains.
+
+### 2. Example
+
+If data approximately follows `y = a + bx`, least squares chooses `a` and `b` that minimize the squared vertical differences between the measured points and the fitted line. For `x = 1…5` and `y = [2.2, 4.1, 5.9, 8.2, 9.8]`, the best line is `y = 0.250 + 1.930x`, with a sum of squared residuals of 0.0830. A different line such as `y = 2.1x` is worse, with a sum of 0.7100.
+
+### 3. Real-World Applications
+
+Trend estimation, calibration, performance modelling, growth curves, sensor models, demand forecasting and experimental science.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** Measure server response time at different user loads and estimate a mathematical relationship between load and response time.
+
+**Solution approach:** Choose a plausible model (here a quadratic, because the delay grows faster as the load increases), fit its parameters with `scipy.optimize.curve_fit`, plot the observed and fitted values, and inspect the residuals.
+
+| Concurrent users | 50 | 100 | 150 | 200 | 250 | 300 | 350 |
+|---|---|---|---|---|---|---|---|
+| Response time (ms) | 82 | 95 | 115 | 145 | 185 | 238 | 305 |
+
+### 5. Solution Code
+
+See `code/Task_14_curve_fitting.py`. It fits the quadratic model, reports the RMSE, R² and parameter errors, compares other models, tests an outlier and fewer data points, fits a cooling-coffee case, and draws one summary diagram.
+
+**Output:**
+
+```
+Fitted model: y = 0.002167x^2 -0.1345x +85.00
+Parameter standard errors: a +/- 0.000089, b +/- 0.0366, c +/- 3.19
+RMSE: 1.55 ms
+R^2 : 0.99958
+Residuals (ms): [-1.69  1.79  1.43  0.24 -1.79 -1.64  1.67]
+Predicted response at 400 users: 377.86 ms
+Predicted response at 500 users: 559.40 ms
+```
+
+![Task 14 summary](output/task_14_diagram.png)
+
+**Interpretation:** The fitted curve is `y = 0.002167x² − 0.1345x + 85.00`. The model explains 99.96% of the variation (R² = 0.9996), and the typical error is only 1.55 ms. The residuals are small and have mixed signs, so there is no pattern the model has missed. The curve says the response time starts around 85 ms with no load and climbs faster and faster, reaching about 378 ms at 400 users. The prediction at 400 users is only slightly beyond the measured range (up to 350), so it is reasonably trustworthy, but the 500-user prediction is much less certain.
+
+### 6. Changing the Inputs and Observing the Results
+
+| Change made | RMSE | At 400 users | At 500 users | Leave-one-out RMSE |
+|---|---|---|---|---|
+| Linear model | 18.83 ms | 312.9 ms | 386.1 ms | 30.64 ms |
+| Quadratic model (original) | 1.55 ms | 377.9 ms | 559.4 ms | 4.16 ms |
+| Cubic model | 0.14 ms | 387.9 ms | 607.7 ms | 0.27 ms |
+| Exponential model | 1.43 ms | 400.4 ms | 698.6 ms | 4.26 ms |
+| Degree-5 polynomial | 0.14 ms | 389.4 ms | 630.3 ms | 5.98 ms |
+
+| Other change | Result |
+|---|---|
+| Outlier: the 250-user value 185 → 300 ms | The curve changes to `y = 0.000524x² + 0.6048x + 35.71`, the RMSE jumps from 1.55 to 35.96 ms, and the 400-user prediction moves from 377.9 to 361.4 ms. |
+| Fit only 50 to 200 users, predict the rest | Errors grow with distance: −2.2 ms at 250 users, −8.8 ms at 300 and −20.9 ms at 350. |
+| Add ±15 ms noise to the measurements | RMSE rises from 1.55 to 11.43 ms, and the standard error of `a` rises from 0.000089 to 0.000660. |
+
+**Observations:**
+
+- The straight line is clearly too simple, with a fit error of 18.8 ms. The curved models fit far better.
+- The cubic and degree-5 curves both reach an RMSE of 0.14 ms on the data, but the leave-one-out test (fit without one point, then predict it) gives 0.27 ms for the cubic and 5.98 ms for degree 5. A fit that matches the data closely can still be overfitting.
+- The models agree inside the measured range but disagree outside it: the predictions at 500 users range from 386 to 699 ms, so extrapolating needs care.
+- One bad measurement changes every parameter, because squaring the residuals gives large errors a large weight.
+- More noise in the data gives a larger RMSE and less certain parameters.
+
+### 7. Related Real-World Case: Cooling of a Cup of Coffee
+
+**Scenario:** A cup of coffee cools down in a room. Newton's law of cooling says that the temperature follows `T(t) = T_room + (T₀ − T_room)·e^(−kt)`. We measure the temperature over 30 minutes and fit the model to estimate the room temperature and the cooling rate `k`.
+
+**Assumptions:**
+
+- The room temperature is constant.
+- The cooling rate is proportional to the difference between the coffee and the room.
+- The measurements have small random errors (about ±0.5 °C).
+
+| Time (min) | 0 | 2 | 4 | 6 | 8 | 10 | 15 | 20 | 30 |
+|---|---|---|---|---|---|---|---|---|---|
+| Temperature (°C) | 90.2 | 80.7 | 73.9 | 66.2 | 61.3 | 55.4 | 46.3 | 38.5 | 30.6 |
+
+**Results:**
+
+```
+Fitted: T(t) = 22.39 + 67.65 exp(-0.0706 t)
+Room temperature estimate: 22.39 +/- 1.00 C
+Cooling constant k = 0.0706 +/- 0.0023 per minute
+Time constant 1/k = 14.2 min;  half-life of the temperature difference = 9.8 min
+RMSE exponential: 0.39 C   (a straight line gives 5.47 C)
+Time for the coffee to cool to 45 C: 15.5 minutes
+Predicted temperature after 60 minutes: 23.4 C
+```
+
+**Interpretation:** The fit estimates the room temperature at 22.4 °C and the cooling constant at 0.0706 per minute, so the gap between the coffee and the room halves about every 9.8 minutes. The exponential curve follows the data to within 0.39 °C, while a straight line is off by 5.47 °C, because cooling slows down as the coffee approaches room temperature. The curve predicts that the coffee reaches 45 °C after about 15.5 minutes and is almost at room temperature (23.4 °C) after an hour. This model has a physical reason behind it, which makes predictions beyond the data more trustworthy than for a purely empirical curve.
+
+### 8. How to Run
+
+```
+pip install numpy scipy matplotlib
+python code/Task_14_curve_fitting.py
+```
