@@ -1029,3 +1029,107 @@ Predicted temperature after 60 minutes: 23.4 C
 pip install numpy scipy matplotlib
 python code/Task_14_curve_fitting.py
 ```
+
+## Task N: Numerical Differentiation
+
+**Program file:** `code/Task_15_numerical_differentiation.py`
+**Output graph:** `output/task_15_diagram.png`
+
+### 1. Mathematical Concept
+
+A derivative measures how quickly a quantity changes. When a formula for the derivative is unavailable, it can be approximated from nearby values.
+
+- Forward difference: `f′(x) ≈ [f(x+h) − f(x)] / h`
+- Backward difference: `f′(x) ≈ [f(x) − f(x−h)] / h`
+- Central difference: `f′(x) ≈ [f(x+h) − f(x−h)] / (2h)`, which is usually more accurate for the same `h`.
+
+The forward and backward errors shrink in proportion to `h`, while the central error shrinks in proportion to `h²`.
+
+### 2. Example
+
+If distance changes from 100 m to 112 m in 2 s, the average rate of change is (112 − 100) / 2 = 6 m/s. Numerical differentiation applies the same idea over very small intervals. For `f(x) = x²` at `x = 1` (exact derivative 2), the forward difference with `h = 0.1` gives 2.1 (error 0.1), and the central difference gives exactly 2.
+
+### 3. Real-World Applications
+
+Estimating speed from position data, acceleration from velocity, gradients in optimization, rates of change in sensors and sensitivity analysis.
+
+### 4. Real-World Problem and Solution Approach
+
+**Problem:** A GPS device records position at closely spaced times. Estimate the instantaneous vehicle speed.
+
+**Solution approach:** Apply central differences to neighbouring position measurements and divide by the time interval. Use a forward difference at the first point and a backward difference at the last point, where only one neighbour exists. Compare different step sizes to understand the error.
+
+| Time (s) | 0 | 1 | 2 | 3 | 4 | 5 | 6 |
+|---|---|---|---|---|---|---|---|
+| Position (m) | 0.0 | 4.8 | 10.2 | 16.1 | 22.7 | 30.0 | 38.0 |
+
+### 5. Solution Code
+
+See `code/Task_15_numerical_differentiation.py`. It estimates the speed from the GPS data, checks it against `np.gradient`, studies the effect of step size, noise and the end formulas, estimates the speed and deceleration of a braking car, and draws one summary diagram.
+
+**Output:**
+
+```
+ t (s)  position (m)  speed (m/s)     method  smooth ref
+     0           0.0         4.80    forward        4.40
+     1           4.8         5.10    central        5.04
+     2          10.2         5.65    central        5.68
+     3          16.1         6.25    central        6.32
+     4          22.7         6.95    central        6.96
+     5          30.0         7.65    central        7.60
+     6          38.0         8.00   backward        8.24
+Same result as np.gradient: True
+```
+
+![Task 15 summary](output/task_15_diagram.png)
+
+**Interpretation:** The vehicle speeds up steadily from about 4.8 m/s to 8.0 m/s over 6 seconds, an acceleration of about 0.64 m/s². At 3 s the speed is 6.25 m/s (22.5 km/h). The "smooth reference" column is the derivative of a quadratic curve fitted to the positions, and it is only a guide, since the true speed is unknown. The central estimates agree with it to within 0.07 m/s. The end points differ more (0.40 m/s at 0 s and 0.24 m/s at 6 s), because the forward and backward formulas are only first-order accurate and have just one neighbouring point to use.
+
+### 6. Changing the Inputs and Observing the Results
+
+| Change made | Result |
+|---|---|
+| Step size on `sin(x)` at `x = 1`, h = 10⁻¹ → 10⁻⁴ | Forward error 4.3×10⁻² → 4.2×10⁻⁵ (proportional to h). Central error 9.0×10⁻⁴ → 9.0×10⁻¹⁰ (proportional to h²). |
+| Step size even smaller, h = 10⁻¹⁰, 10⁻¹², 10⁻¹⁵ | The error grows again: forward 5.9×10⁻⁸, 4.3×10⁻⁵, 1.5×10⁻². The best values are 2.5×10⁻⁹ (forward, at h ≈ 6×10⁻⁹) and 3.8×10⁻¹³ (central, at h ≈ 6×10⁻⁶). |
+| Noise of about ±0.3 m added to the GPS positions | With 2 s central differences the speeds change by up to 0.3 m/s, for example 4.8 instead of 5.1 at 1 s. The RMS error against the smooth reference is 0.23 m/s. |
+| Wider span (4 s instead of 2 s) on the same noisy data | The RMS error falls to 0.01 m/s. A wider span averages out the noise. |
+| Use every 2nd GPS point (2 s interval) | Interior speeds stay accurate (5.67 and 6.95 m/s at 2 s and 4 s, against 5.68 and 6.96), but the end points get worse (7.65 against 8.24 at 6 s). |
+| Second-order formula at the ends | At 0 s: 4.50 instead of 4.80 (reference 4.40). At 6 s: 8.35 instead of 8.00 (reference 8.24). |
+
+**Observations:**
+
+- Central differences are more accurate than forward or backward differences for the same step size.
+- Making `h` smaller improves the answer only up to a point. Below about 10⁻⁶ to 10⁻⁸, round-off error from subtracting nearly equal numbers takes over and the answer gets worse.
+- Differentiating noisy data amplifies the noise, so noisy measurements should use a wider span or be smoothed first.
+- The end points are the least accurate, and a second-order one-sided formula improves them.
+
+### 7. Related Real-World Case: Speed and Deceleration of a Braking Car
+
+**Scenario:** A GPS unit records the position of a braking car every 0.5 s. We estimate its speed and its acceleration. The speed is the first derivative of the position, and the acceleration is the second derivative, calculated with `[x(t+h) − 2x(t) + x(t−h)] / h²`.
+
+**Assumptions:**
+
+- The car starts at 20 m/s and slows down at a constant 4 m/s², so the true position is `x = 20t − 2t²`.
+- Each GPS position has a small error of up to ±0.04 m.
+- Times from 0 to 4 s, with `h = 0.5` s.
+
+**Results:**
+
+| t (s) | Speed estimate (m/s) | True speed (m/s) | Acceleration estimate (m/s²) |
+|---|---|---|---|
+| 0.5 | 18.02 | 18.00 | −3.52 |
+| 1.0 | 16.01 | 16.00 | −4.52 |
+| 2.0 | 11.98 | 12.00 | −4.48 |
+| 3.0 | 8.01 | 8.00 | −4.44 |
+| 3.5 | 5.99 | 6.00 | −3.64 |
+
+The speed estimates have an RMS error of only 0.014 m/s. The acceleration estimates range from −4.52 to −3.48 m/s², with a mean of −3.95 m/s² (true value −4.00). A straight line through the speed estimates gives a deceleration of 4.01 m/s², which means the car stops after about 5.0 s and its stopping distance is about 49.9 m (true value 50 m).
+
+**Interpretation:** The speed estimates are very accurate, but single acceleration estimates swing between −3.5 and −4.5 m/s² because the second difference divides the position errors by `h² = 0.25`, which magnifies them. The average of many estimates, or the slope of a line through the speed estimates, is much more reliable. This shows that every extra derivative makes the noise problem worse.
+
+### 8. How to Run
+
+```
+pip install numpy matplotlib
+python code/Task_15_numerical_differentiation.py
+```
