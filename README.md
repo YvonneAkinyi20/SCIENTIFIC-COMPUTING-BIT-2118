@@ -1133,3 +1133,85 @@ The speed estimates have an RMS error of only 0.014 m/s. The acceleration estima
 pip install numpy matplotlib
 python code/Task_15_numerical_differentiation.py
 ```
+
+## Task O (Task 16): Numerical Integration
+
+**Program:** `code/Task_16_numerical_integration.py`
+**Outputs:** `output/task_16_output.txt`, `output/task_16_diagram.png`
+
+### A. Concept
+An integral is an accumulated quantity, the area under a curve. The trapezoidal rule approximates that area with trapezoids. Simpson's rule fits parabolic segments through the points and is often more accurate for smooth functions. SciPy's `quad` uses adaptive quadrature, which refines the calculation automatically. For example, constant power of 2 kW for 3 hours gives ∫P dt = 2 × 3 = 6 kWh, which the program confirms. For changing power, many small contributions are added.
+
+**Problem:** A smart meter records power at regular intervals. Estimate the total energy consumed.
+
+### B. Input values and mathematical operation
+
+| Input | Value |
+|---|---|
+| `time_hours` | 0, 2, 4, 6, 8, 10, 12 |
+| `power_kw` | 0.8, 1.0, 1.4, 1.8, 1.6, 1.2, 0.9 |
+
+- Trapezoidal rule: energy ≈ Σ (P(i) + P(i+1))/2 · Δt.
+- Simpson's rule: energy ≈ (h/3)·[P0 + 4(P1 + P3 + P5) + 2(P2 + P4) + P6] for 6 intervals of width h = 2 hours.
+
+Check by hand: trapezoid = 2·(0.4 + 1.0 + 1.4 + 1.8 + 1.6 + 1.2 + 0.45) = 2 × 7.85 = 15.7 kWh. Simpson = (2/3)·(0.8 + 4×4.0 + 2×3.0 + 0.9) = (2/3) × 23.7 = 15.8 kWh.
+
+**Result:**
+```
+Energy using trapezoidal rule: 15.700 kWh
+Energy using Simpson's rule:   15.800 kWh
+Difference between estimates:  0.100 kWh
+```
+
+### C. Changing the inputs
+
+**C1. One reading changed (06:00 from 1.8 kW to 2.4 kW):**
+
+| Rule | Before | After |
+|---|---|---|
+| Trapezoid | 15.700 kWh | 16.900 kWh |
+| Simpson | 15.800 kWh | 17.400 kWh |
+
+**C2. Reading interval, using the smooth function P(t) = 1.2 + 0.7·sin(πt/12) with a known exact answer of 19.747606 kWh:**
+
+| Interval | Trapezoid error | Simpson error |
+|---|---|---|
+| 6 h | 1.147606 | 0.252394 |
+| 3 h | 0.277758 | 0.012192 |
+| 2 h | 0.122735 | 0.002308 |
+| 1 h | 0.030578 | 0.000141 |
+
+**C3. Adaptive `quad`** on the same function gives 19.747606 kWh with an error estimate of 2.2e-13.
+
+- Raising one reading increases the energy, and Simpson reacts more strongly (+1.6 kWh against +1.2 kWh for the trapezoid) because it gives weight 4 to odd-numbered readings and the 06:00 reading is one of them.
+- Shorter reading intervals give smaller errors for both rules. For this smooth curve, Simpson's error shrinks much faster: at 2 hours it is 0.0023 kWh against 0.123 kWh for the trapezoid.
+- `quad` is best when the function itself is known, since it picks its own points. With meter data we only have the readings, so we must choose between the trapezoid and Simpson.
+
+### D. Meaning of the output and the graph
+The household used about **15.7 to 15.8 kWh** over the 12 hours, which is the area under the power curve. Both rules agree within 0.1 kWh (under 1%), so the estimate is reliable here. Power rises from 0.8 kW at the start, peaks at 1.8 kW at 06:00 and falls back to 0.9 kW, and the shaded area in the left panel of `output/task_16_diagram.png` is the energy used. The area unit works out as kW × hours = kWh.
+
+![Task 16 graphs](output/task_16_diagram.png)
+
+### E. Related real-world case: distance of a city bus from speed readings
+
+**Scenario:** A city bus logs its speed every 5 minutes for one hour. Distance is the integral of speed over time, so we estimate the distance travelled.
+
+**Assumptions:**
+- The speed readings are assumed (illustrative) data.
+- The bus stops at 30 minutes and at the start and end, and speed changes smoothly between readings.
+- Time is converted to hours so that km/h × h = km.
+
+**Input data:** speeds (km/h) at 0, 5, ..., 60 minutes: 0, 18, 32, 40, 45, 30, 0, 12, 35, 48, 50, 36, 0.
+
+**Output:**
+```
+Distance using trapezoidal rule: 28.833 km
+Distance using Simpson's rule:   29.444 km
+Difference between estimates:    0.611 km
+Average speed over the hour:     28.83 km/h
+```
+
+**Interpretation:** The bus travelled about **28.8 to 29.4 km** in the hour, an average speed of about 28.8 km/h, which is realistic for a city route with stops. The two rules differ by 0.611 km (about 2%), a bigger gap than for the smooth meter data. This is because the speed drops to zero and changes sharply between readings, which parabolas fit less well. For data with sudden changes like this, the trapezoidal rule is the safer choice, and shorter reading intervals would narrow the gap.
+
+### F. Submission note
+The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
