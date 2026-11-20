@@ -1688,3 +1688,4 @@ The hospital cloud storage application further demonstrated how numerical optimi
 ---
 
 **END OF TASK 19**
+git add README.md code/Task_19_hospital_storage.py output/

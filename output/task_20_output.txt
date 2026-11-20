@@ -1,0 +1,22 @@
+
+============================================================
+EXPERIMENT 1: ORIGINAL NETWORK SERVER
+============================================================
+
+INPUT VALUES
+Server capacity: 1000.0
+Mean demand: 850.0
+Standard deviation: 120.0
+Number of simulations: 100000
+Random seed: 42
+
+SIMULATION RESULTS
+Estimated overload probability: 10.6160%
+Overload percentage: 10.62%
+Number of overload cases: 10616 out of 100000
+Successful cases: 89384 out of 100000
+
+INTERPRETATION
+The server has a moderate overload risk.
+
+Graph saved: task_20_original.png
