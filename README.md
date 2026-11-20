@@ -1215,3 +1215,106 @@ Average speed over the hour:     28.83 km/h
 
 ### F. Submission note
 The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
+
+## Task P (Task 17): Ordinary Differential Equations, Euler Method
+
+**Program:** `code/Task_17_euler_ode.py`
+**Outputs:** `output/task_17_output.txt`, `output/task_17_diagram.png`
+
+### A. Concept
+An ODE describes how a quantity changes, dy/dt = f(t, y). Euler's method starts from a known value y(0) and steps forward: y(n+1) = y(n) + h·f(t(n), y(n)), where h is the step size. A smaller h usually gives better accuracy but needs more computation. For example, for dy/dt = y with y(0) = 1 and h = 0.1, Euler gives y1 = 1.10 and y2 = 1.21 (the exact value is 1.2214), which the program confirms.
+
+**Problem:** Predict the cooling of a hot object using Newton's law of cooling, dT/dt = -k(T - T_ambient), starting from an initial temperature and repeatedly applying Euler's update.
+
+### B. Input values and mathematical operation
+
+| Input | Value | Meaning |
+|---|---|---|
+| `T_ambient` | 25.0 C | room temperature |
+| `T_initial` | 90.0 C | starting temperature of the object |
+| `k` | 0.12 per minute | cooling constant |
+| `h` | 1.0 minute | step size |
+| `end_time` | 30 minutes | how long to simulate |
+
+Each step computes T(n+1) = T(n) + h · (-k · (T(n) - T_ambient)). The exact solution, T(t) = T_ambient + (T_initial - T_ambient)·e^(-kt), is used only to check the Euler result.
+
+Check by hand: the first step gives T1 = 90 + 1 × (-0.12 × (90 - 25)) = 90 - 7.8 = 82.2 C, which matches the program.
+
+**Result:**
+```
+Euler temperature after 30 min: 26.40 C
+Exact temperature after 30 min: 26.78 C
+Final absolute error: 0.3720 C
+```
+The largest error is near 10 minutes (Euler 43.10 C against exact 44.58 C, an error of -1.475 C), after which both curves approach the ambient temperature.
+
+### C. Changing the inputs
+
+**C1. Step size h (temperature at 30 minutes; exact value 26.7760 C):**
+
+| h (min) | Euler T(30) | Absolute error |
+|---|---|---|
+| 10.0 | 24.4800 | 2.29604 |
+| 5.0 | 25.2662 | 1.50980 |
+| 2.0 | 26.0595 | 0.71650 |
+| 1.0 | 26.4041 | 0.37196 |
+| 0.5 | 26.5870 | 0.18901 |
+| 0.1 | 26.7378 | 0.03825 |
+
+**C2. Stability:** for this problem Euler needs h < 2/k = 16.67 minutes.
+- h = 15 min gives temperatures 90, -27, 66.6, -8.3, 51.6 (swings around the answer but slowly settles).
+- h = 20 min gives 90, -66, 152.4, -153.4 (the swings grow, so the method diverges).
+
+**C3. Cooling constant k (h = 1 min):**
+
+| k | Euler T(30) | Exact T(30) |
+|---|---|---|
+| 0.05 | 38.95 C | 39.50 C |
+| 0.12 | 26.40 C | 26.78 C |
+| 0.25 | 25.01 C | 25.04 C |
+
+**C4. Initial temperature (h = 1 min):**
+
+| T0 | Euler T(30) | Exact T(30) |
+|---|---|---|
+| 60 C | 25.76 C | 25.96 C |
+| 90 C | 26.40 C | 26.78 C |
+| 120 C | 27.05 C | 27.60 C |
+
+- Reducing h reduces the error. Halving h roughly halves the error (0.372 at h = 1 and 0.189 at h = 0.5), which is the behaviour of a first-order method.
+- Euler always lies below the exact curve here, because the cooling curve bends upward and each tangent step undershoots it.
+- Even stable steps can be physically wrong. With h = 10 the object is predicted to cool to 12 C at 10 minutes, which is below the 25 C room temperature and impossible. With h = 20 the method becomes unstable and the temperature swings between -66 C and 152 C.
+- A larger k makes the object cool faster, so it is almost at room temperature after 30 minutes (25.01 C for k = 0.25). A hotter start leaves it hotter at 30 minutes. In both cases Euler stays close to the exact value.
+
+### D. Meaning of the output and the graph
+The object starts at 90 C and cools quickly at first and then more slowly, because the cooling rate is proportional to how much hotter it is than the room. After 30 minutes it is at about **26.4 C** (Euler) against **26.78 C** (exact), only 0.37 C apart, which is accurate enough for this step size. The temperature approaches the 25 C ambient temperature but never goes below it.
+
+**Graphs (`output/task_17_diagram.png`):**
+- Top left: the Euler points follow the exact curve closely and sit slightly below it.
+- Top right: a smaller step size gives a curve closer to the exact solution, and h = 0.1 is almost on top of it. The h = 10 line dips below the ambient temperature, which shows the error from too large a step.
+- Bottom left: h = 5 settles smoothly, while h = 20 swings with growing size and never settles.
+
+![Task 17 graphs](output/task_17_diagram.png)
+
+### E. Related real-world case: logistic population growth
+
+**Scenario:** A population of animals grows quickly at first and then slows as it approaches the capacity of its habitat. This is modelled by the logistic equation dP/dt = r·P·(1 - P/K), solved with Euler's method.
+
+**Assumptions:**
+- The values are assumed (illustrative), not from a real study.
+- Growth rate r = 0.4 per day, capacity K = 1000 animals, initial population P0 = 50.
+- No migration, predators or disease. The simulation runs for 30 days.
+
+**Output:**
+```
+Step h (days)  Euler P(30)  Exact P(30)  Abs error
+         2.0      1000.00       999.88      0.116
+         1.0       999.98       999.88      0.095
+         0.5       999.94       999.88      0.059
+Euler (h=1) first reaches half the capacity (500) at day 9; exact solution reaches it at day 7.36
+```
+
+**Interpretation:** The population grows in an S-shaped curve and settles at the capacity of 1000. After 30 days all step sizes agree closely with the exact answer, because by then the population has saturated. The step size matters in the middle of the growth: Euler with h = 1 day reaches half the capacity at day 9, while the exact solution reaches it at day 7.36, so Euler lags behind during the fast-growth phase (see the bottom-right graph, where h = 2 days lags more than h = 0.5). A check only at the final time would hide this, so the whole curve must be compared. This is the same method as the cooling problem, applied to a nonlinear equation.
+
+### F. Submission note
+The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
