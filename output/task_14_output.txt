@@ -1,0 +1,60 @@
+================================================================
+PART 0: CONCEPT CHECK  y = a + b x
+================================================================
+Data: x = [1. 2. 3. 4. 5.],  y = [2.2 4.1 5.9 8.2 9.8]
+Least squares line: y = 0.250 + 1.930 x
+Sum of squared residuals: 0.0830
+Any other line is worse, e.g. y = 0 + 2.1 x gives 0.7100.
+
+================================================================
+PART 1: SERVER RESPONSE TIME VS CONCURRENT USERS
+================================================================
+Users      : [ 50. 100. 150. 200. 250. 300. 350.]
+Response ms: [ 82.  95. 115. 145. 185. 238. 305.]
+Fitted model: y = 0.002167x^2 -0.1345x +85.00
+Parameter standard errors: a +/- 0.000089, b +/- 0.0366, c +/- 3.19
+RMSE: 1.55 ms
+R^2 : 0.99958
+Residuals (ms): [-1.69  1.79  1.43  0.24 -1.79 -1.64  1.67]   (sum = -3.93e-11)
+Predicted response at 400 users: 377.86 ms
+Predicted response at 500 users: 559.40 ms
+
+================================================================
+PART 2: CHANGING THE INPUTS
+================================================================
+a) Different models (7 data points):
+   model            RMSE       R^2   leave-one-out RMSE   at 400 users   at 500 users
+   linear          18.83   0.93797                30.64          312.9          386.1
+   quadratic        1.55   0.99958                 4.16          377.9          559.4
+   cubic            0.14   1.00000                 0.27          387.9          607.7
+   exponential      1.43   0.99964                 4.26          400.4          698.6
+   degree 5         0.14   1.00000                 5.98          389.4          630.3
+   Cubic and degree-5 curves fit the 7 points almost exactly (RMSE 0.14), but the leave-one-out error shows degree 5 is overfitting (it cannot predict a point it has not seen).
+   The predictions at 500 users range from about 386 to 699 ms: the model you choose matters most when you extrapolate.
+
+b) One outlier (the 250-user measurement 185 ms is recorded as 300 ms):
+   Original fit: y = 0.002167x^2 -0.1345x +85.00,  RMSE 1.55 ms,  at 400 users: 377.9 ms
+   With outlier: y = 0.000524x^2 +0.6048x +35.71,  RMSE 35.96 ms,  at 400 users: 361.4 ms
+   One bad point shifts every parameter - least squares is sensitive to outliers.
+
+c) Fewer data points (fit only users 50-200, then predict the rest):
+   250 users: predicted  182.8 ms,  measured 185 ms,  error   -2.2 ms
+   300 users: predicted  229.2 ms,  measured 238 ms,  error   -8.8 ms
+   350 users: predicted  284.1 ms,  measured 305 ms,  error  -20.9 ms
+   Predicting beyond the fitted range (extrapolation) gets less reliable.
+
+d) More noise (add the same +/-15 ms pattern to the measurements):
+   RMSE rises to 11.43 ms (from 1.55);  standard error of a rises from 0.000089 to 0.000660.
+
+================================================================
+PART 3: COOLING OF A CUP OF COFFEE  T(t) = T_room + (T0 - T_room) exp(-k t)
+================================================================
+Measured temperatures (C) at t = [ 0.  2.  4.  6.  8. 10. 15. 20. 30.] min:
+   [90.2 80.7 73.9 66.2 61.3 55.4 46.3 38.5 30.6]
+Fitted: T(t) = 22.39 + 67.65 exp(-0.0706 t)
+Room temperature estimate: 22.39 +/- 1.00 C;  cooling constant k = 0.0706 +/- 0.0023 per minute
+Time constant 1/k = 14.2 min;  half-life of the temperature difference = 9.8 min
+RMSE exponential: 0.39 C   (a straight line gives 5.47 C)
+Time for the coffee to cool to 45 C: 15.5 minutes
+Predicted temperature after 60 minutes: 23.4 C (approaches room temperature 22.4 C)
+
