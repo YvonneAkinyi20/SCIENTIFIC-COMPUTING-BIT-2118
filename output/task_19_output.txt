@@ -1,0 +1,83 @@
+
+============================================================
+EXPERIMENT 1: ORIGINAL CLOUD SERVER OPTIMIZATION
+============================================================
+
+INPUT VALUES
+Cost of Type A Servers: 12
+Cost of Type B Servers: 18
+Capacity of Type A Servers: 100
+Capacity of Type B Servers: 170
+Required capacity: 1000
+
+CONTINUOUS OPTIMIZATION RESULTS
+Optimization success: True
+Type A Servers allocation: 0.000
+Type B Servers allocation: 5.882
+Total capacity: 1000.00
+Minimum planning cost: 105.88
+
+BEST WHOLE-UNIT SOLUTION
+Minimum cost: 108
+Type A Servers allocation: 0
+Type B Servers allocation: 6
+Total capacity: 1020
+
+Graph saved: task_19_original.png
+
+============================================================
+EXPERIMENT 2: MODIFIED CLOUD SERVER OPTIMIZATION
+============================================================
+
+INPUT VALUES
+Cost of Type A Servers: 12
+Cost of Type B Servers: 18
+Capacity of Type A Servers: 100
+Capacity of Type B Servers: 170
+Required capacity: 1200
+
+CONTINUOUS OPTIMIZATION RESULTS
+Optimization success: True
+Type A Servers allocation: 0.000
+Type B Servers allocation: 7.059
+Total capacity: 1200.00
+Minimum planning cost: 127.06
+
+BEST WHOLE-UNIT SOLUTION
+Minimum cost: 132
+Type A Servers allocation: 2
+Type B Servers allocation: 6
+Total capacity: 1220
+
+Graph saved: task_19_modified.png
+
+============================================================
+EXPERIMENT 3: HOSPITAL CLOUD STORAGE OPTIMIZATION
+============================================================
+
+INPUT VALUES
+Cost of Storage A Units: 8
+Cost of Storage B Units: 11
+Capacity of Storage A Units: 100
+Capacity of Storage B Units: 170
+Required capacity: 1200
+
+CONTINUOUS OPTIMIZATION RESULTS
+Optimization success: True
+Storage A Units allocation: 0.000
+Storage B Units allocation: 7.059
+Total capacity: 1200.00
+Minimum planning cost: 77.65
+
+BEST WHOLE-UNIT SOLUTION
+Minimum cost: 82
+Storage A Units allocation: 2
+Storage B Units allocation: 6
+Total capacity: 1220
+
+Graph saved: task_19_hospital.png
+
+============================================================
+ALL OPTIMIZATION EXPERIMENTS COMPLETED SUCCESSFULLY!
+All numerical results and graphs have been saved.
+============================================================
