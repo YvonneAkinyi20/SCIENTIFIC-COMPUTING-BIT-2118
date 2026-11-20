@@ -1435,3 +1435,256 @@ beta = 0.30 (R0 = 3.0): peak   300.8 infected, total infected  940.6
 
 ### F. Submission note
 The discussion for this task was done as group work, but the code, experiments and write-up here are my own and are submitted in my individual GitHub repository. No group repository is used.
+
+
+# BIT 2118 - SCIENTIFIC COMPUTING
+
+# TASK 19: NUMERICAL OPTIMIZATION
+
+**Topic:** Numerical Optimization  
+**Programming Language:** Python  
+**Tools:** VS Code, NumPy, SciPy, Matplotlib and GitHub
+
+---
+
+## 1. INTRODUCTION
+
+Numerical optimization is a mathematical technique used to find the best possible solution to a problem by minimizing or maximizing an objective function.
+
+In this assignment, numerical optimization is applied to a cloud service that wants to allocate two types of servers while minimizing operating costs and meeting a minimum processing-capacity requirement.
+
+The program uses Python libraries to perform optimization calculations and visualize the results.
+
+## 2. MATHEMATICAL CONCEPT
+
+Optimization involves finding input values that produce the minimum or maximum value of a mathematical function.
+
+For example:
+
+f(x) = (x - 3)^2 + 2
+
+The minimum occurs when x = 3 because the squared term becomes zero.
+
+Therefore:
+
+Minimum value = 2.
+
+Numerical optimization is applied in:
+
+- Cloud resource allocation
+- Network routing
+- Machine learning
+- Scheduling
+- Engineering design
+- Cost reduction
+- Parameter tuning
+
+## 3. ORIGINAL REAL-WORLD PROBLEM
+
+A cloud service wants to choose the allocation of two server types that minimizes operating costs while meeting a minimum processing-capacity requirement.
+
+### 3.1 Input Values
+
+| Parameter | Type A | Type B |
+|---|---:|---:|
+| Cost per unit | 12 | 18 |
+| Processing capacity | 100 | 170 |
+
+Required processing capacity = 1000 units.
+
+Let:
+
+- x = Number of Type A server units.
+- y = Number of Type B server units.
+
+### 3.2 Objective Function
+
+The objective is to minimize the total operating cost.
+
+C(x, y) = 12x + 18y
+
+### 3.3 Capacity Constraint
+
+100x + 170y >= 1000
+
+### 3.4 Non-negative Constraints
+
+x >= 0
+
+y >= 0
+
+## 4. PYTHON IMPLEMENTATION
+
+The program uses the following Python libraries:
+
+**NumPy:** Used for numerical calculations and generating graph values.
+
+**SciPy:** Used to perform numerical optimization through `scipy.optimize.minimize` using the SLSQP method.
+
+**Matplotlib:** Used to generate and save optimization graphs.
+
+The program also checks whole-unit combinations because actual servers cannot be allocated in fractions.
+
+## 5. CHANGING THE INPUT PARAMETERS
+
+To observe how changing an input affects optimization results, the required processing capacity was increased from 1000 to 1200 units.
+
+The original costs and server capacities remained unchanged.
+
+### 5.1 Modified Constraint
+
+100x + 170y >= 1200
+
+### 5.2 Comparison of Results
+
+| Parameter | Original | Modified |
+|---|---:|---:|
+| Required capacity | 1000 | 1200 |
+| Type A allocation | 0 | 0 |
+| Type B allocation | 5.882 | 7.059 |
+| Minimum cost | 105.88 | 127.06 |
+
+### 5.3 Interpretation
+
+Increasing the required processing capacity increases the minimum operating cost.
+
+The cloud service requires more server resources to satisfy the increased processing requirement.
+
+This demonstrates how changing an optimization parameter affects the optimal solution.
+
+## 6. MODIFIED REAL-WORLD APPLICATION: HOSPITAL CLOUD STORAGE
+
+The original program was modified to solve a related real-world problem involving hospital cloud storage allocation.
+
+A hospital wants to minimize the cost of storing patient records, medical images and other digital information while ensuring sufficient storage capacity.
+
+### 6.1 Assumptions
+
+1. Storage costs remain constant.
+2. Storage allocations cannot be negative.
+3. The hospital requires at least 1200 GB of storage.
+4. Fractional storage units are allowed in continuous optimization.
+5. Whole storage units are considered for the integer solution.
+
+### 6.2 Input Data
+
+| Parameter | Storage A | Storage B |
+|---|---:|---:|
+| Cost per unit | 8 | 11 |
+| Storage capacity | 100 GB | 170 GB |
+
+Required storage capacity = 1200 GB.
+
+Let:
+
+- x = Number of Storage A units.
+- y = Number of Storage B units.
+
+### 6.3 Objective Function
+
+Minimize:
+
+C(x, y) = 8x + 11y
+
+### 6.4 Storage Constraint
+
+100x + 170y >= 1200
+
+### 6.5 Non-negative Constraints
+
+x >= 0
+
+y >= 0
+
+## 7. HOSPITAL STORAGE OPTIMIZATION RESULTS
+
+### 7.1 Continuous Optimization Results
+
+- Storage A allocation: 0
+- Storage B allocation: Approximately 7.059
+- Total storage capacity: 1200 GB
+- Minimum storage cost: 77.65
+
+### 7.2 Whole-Unit Optimization Results
+
+- Storage A allocation: 2
+- Storage B allocation: 6
+- Total storage capacity: 1220 GB
+- Total storage cost: 82
+
+### 7.3 Interpretation
+
+The continuous optimization recommends approximately 7.059 units of Storage B because it provides the required storage capacity at the lowest cost.
+
+However, when whole storage units are required, the best combination is two Storage A units and six Storage B units.
+
+This provides 1220 GB of storage at a total cost of 82.
+
+The hospital therefore meets its storage requirement while minimizing expenditure under the whole-unit purchasing assumption.
+
+## 8. VISUALIZATION AND GRAPH INTERPRETATION
+
+The program generates three optimization graphs.
+
+### Graph 1: Original Cloud Server Optimization
+
+Shows the feasible region, capacity constraint boundary, minimum cost line and optimal solution for the original capacity requirement of 1000 units.
+
+### Graph 2: Modified Cloud Server Optimization
+
+Shows how increasing the required capacity to 1200 units affects the feasible region and optimal solution.
+
+### Graph 3: Hospital Cloud Storage Optimization
+
+Shows the optimal allocation of two types of cloud storage while minimizing hospital storage costs.
+
+### Graph Interpretation
+
+- The horizontal axis represents the allocation of the first resource.
+- The vertical axis represents the allocation of the second resource.
+- The shaded region represents feasible solutions.
+- The solid line represents the capacity constraint.
+- The dashed line represents the minimum cost line.
+- The red point represents the continuous optimal solution.
+- The green star represents the best whole-unit solution.
+
+Increasing the required capacity shifts the constraint boundary and reduces the feasible region within the displayed graph limits.
+
+The minimum operating cost increases when more processing capacity is required.
+
+## 9. OUTPUT FILES
+
+The program automatically saves the numerical results and graphs inside the `output` folder.
+
+The generated files include:
+
+| File | Description |
+|---|---|
+| task_19_output.txt | Numerical optimization results |
+| task_19_original.png | Original cloud server graph |
+| task_19_modified.png | Modified cloud server graph |
+| task_19_hospital.png | Hospital storage graph |
+
+## 10. CONCLUSION
+
+Numerical optimization helps organizations identify resource allocations that minimize costs while satisfying specific requirements.
+
+This assignment demonstrated how SciPy can solve constrained optimization problems and how Matplotlib can visualize optimization results.
+
+Changing the required processing capacity affected the optimal allocation and increased the minimum operating cost.
+
+The hospital cloud storage application further demonstrated how numerical optimization can be adapted to solve a different real-world problem.
+
+## 11. TECHNOLOGIES USED
+
+- Python 3
+- NumPy
+- SciPy
+- Matplotlib
+- Visual Studio Code
+- Git
+- GitHub
+
+---
+
+**END OF TASK 19**
