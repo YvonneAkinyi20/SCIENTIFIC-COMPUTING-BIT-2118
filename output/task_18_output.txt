@@ -1,0 +1,61 @@
+=== A. SIMPLE EXAMPLE: dy/dt = -0.5 y, y(0) = 10 ===
+t     : [0 2 4]
+y(t)  : [10.      3.6788  1.3534]   exact: [10.      3.6788  1.3534]
+
+=== B. ORIGINAL PROBLEM: RC charging circuit ===
+Inputs: Vs = 5.0 V, R = 1000 ohm, C = 0.001 F, V0 = 0.0 V, time 0 to 5 s
+Time constant tau = R*C = 1.000 s
+Solver success: True
+Capacitor voltage at 5 s: 4.9663 V
+Maximum error against exact solution: 9.282e-10 V
+
+Time(s)  Voltage(V)  Fraction of Vs
+   0.0     0.0000       0.0%
+   1.0     3.1606      63.2%
+   2.0     4.3233      86.5%
+   3.0     4.7511      95.0%
+   5.0     4.9663      99.3%
+
+=== C. CHANGING THE INPUTS ===
+C1. Changing R and C (voltage at 1 s and time to reach 90% of Vs):
+   R (ohm)   C (F)     tau (s)   V(1 s)   Time to 90% (s)
+      1000    0.0010    1.000   3.1606      2.305
+      2000    0.0010    2.000   1.9673      4.607
+      1000    0.0005    0.500   4.3233      1.153
+       500    0.0010    0.500   4.3233      1.153
+   (theory: time to 90% = tau*ln(10) = 2.303 x tau)
+
+C2. Discharging: start at 5 V, supply 0 V
+   Voltage at 1 s: 1.8395 V (theory 5*e^-1 = 1.8394 V)
+   Voltage at 5 s: 0.0337 V
+   Maximum error: 1.097e-09 V
+
+C3. Solver settings (charging circuit, error at 5 s grid, function evaluations):
+   Method  rtol     max error      nfev
+   RK45    1e-03     6.635e-04     56
+   RK45    1e-06     8.652e-07    122
+   RK45    1e-09     9.282e-10    386
+   RK23    1e-03     1.355e-02     44
+   RK23    1e-06     7.424e-06    296
+   RK23    1e-09     7.039e-09   2798
+   Radau   1e-03     2.657e-04     85
+   Radau   1e-06     4.835e-07    287
+   Radau   1e-09     4.940e-10   1435
+
+C4. Supply switched on/off every 2 s (square wave):
+   V at 2 s: 4.3211 V
+   V at 4 s: 0.5854 V
+   V at 6 s: 4.3972 V
+   V at 8 s: 0.5964 V
+
+=== E. REAL-WORLD CASE: SIR epidemic model ===
+Inputs: N = 1000, beta = 0.3/day, gamma = 0.1/day, start with 1 infected
+Basic reproduction number R0 = beta/gamma = 3.0
+Solver success: True
+Peak infections: 300.8 people on day 38.4
+Total ever infected by day 160: 940.5 of 1000 (94.1%)
+Never infected (still susceptible): 59.5
+Conservation check, max |S+I+R-N|: 6.82e-13
+beta = 0.15 (R0 = 1.5): peak    63.7 infected, total infected  583.9
+beta = 0.20 (R0 = 2.0): peak   153.9 infected, total infected  797.2
+beta = 0.30 (R0 = 3.0): peak   300.8 infected, total infected  940.6
