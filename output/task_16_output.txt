@@ -1,0 +1,32 @@
+=== A. SIMPLE EXAMPLE: 2 kW for 3 hours ===
+Energy = 6.000 kWh (expected 2 x 3 = 6)
+
+=== B. ORIGINAL PROBLEM: smart-meter energy over 12 hours ===
+Inputs: time_hours = [ 0.  2.  4.  6.  8. 10. 12.]
+        power_kw   = [0.8 1.  1.4 1.8 1.6 1.2 0.9]
+Energy using trapezoidal rule: 15.700 kWh
+Energy using Simpson's rule:   15.800 kWh
+Difference between estimates:  0.100 kWh
+
+=== C. CHANGING THE INPUTS ===
+C1. Reading at 06:00 changed from 1.8 kW to 2.4 kW:
+    Trapezoid: 15.700 -> 16.900 kWh
+    Simpson:   15.800 -> 17.400 kWh
+
+C2. Reading interval (smooth test function, exact answer known):
+    Exact energy: 19.747606 kWh
+    Interval  Trapezoid error   Simpson error
+      6.0 h        1.147606        0.252394
+      3.0 h        0.277758        0.012192
+      2.0 h        0.122735        0.002308
+      1.0 h        0.030578        0.000141
+
+C3. Adaptive quad on the smooth function: 19.747606 kWh (error estimate 2.2e-13)
+
+=== E. REAL-WORLD CASE: distance of a city bus from speed readings ===
+Time (min): [ 0  5 10 15 20 25 30 35 40 45 50 55 60]
+Speed (km/h): [ 0 18 32 40 45 30  0 12 35 48 50 36  0]
+Distance using trapezoidal rule: 28.833 km
+Distance using Simpson's rule:   29.444 km
+Difference between estimates:    0.611 km
+Average speed over the hour:     28.83 km/h
